@@ -1,0 +1,13 @@
+{"share_energy_region1": {
+    "dims": ["sector", "source", "out"],
+    "cell": "C4",
+    "file": "example_data/inputs.xlsx",
+    "sheet": "Region1",
+    "description": "This is my second variable.",
+    "units": "dmnl", "dimensions": {
+        "sector": ["col", 1],
+        "source": ["row", 1],
+        "out": ["row", 3]
+        }
+    }
+}

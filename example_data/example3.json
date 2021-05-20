@@ -1,0 +1,14 @@
+{"share_energy": {
+    "dims": ["source", "sector", "region", "out"],
+    "cell": "C4",
+    "file": "example_data/inputs.xlsx",
+    "description": "This is my variable.",
+    "units": "dmnl",
+    "dimensions": {
+        "sector": ["col", 1],
+        "region": ["sheet", ["Region1", "Region2", "Region3", "Region4"]],
+        "source": ["row", 1],
+        "out": ["row", 3]
+        }
+    }
+}

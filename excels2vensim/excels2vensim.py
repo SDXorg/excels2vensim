@@ -1,8 +1,10 @@
 import re
+import textwrap
+import string
 
 import numpy as np
 import openpyxl
-import string
+
 
 subscript_dict = {'sector': ['A', 'B', 'C', 'D'],
                   'region': ['Region1', 'Region2', 'Region3', 'Region4'],
@@ -10,8 +12,10 @@ subscript_dict = {'sector': ['A', 'B', 'C', 'D'],
                   'out': ['Elec', 'Heat', 'Solid', 'Liquid']}
 
 class ExternalVariable(object):
-    def __init__(self, var_name, dims, cell, file, sheet):
+    def __init__(self, var_name, dims, cell, description, units, file, sheet):
         self.var_name = var_name
+        self.description = description
+        self.units = units
         self.dims = dims
         self.file = file
         self.sheet = sheet
@@ -56,7 +60,9 @@ class ExternalVariable(object):
             return
 
         # duplicate the rows, cols, file and sheet values if not given
-        coords_to_duplicate = [along for along in ['col', 'row', 'file', 'sheet'] if along != read_along]
+        coords_to_duplicate = [
+            along for along in ['col', 'row', 'file', 'sheet']
+            if along != read_along]
 
         for along in coords_to_duplicate:
             list_out = []
@@ -78,6 +84,23 @@ class ExternalVariable(object):
                 for step in steps:
                     list_out.append(step)
             elements[read_along] = list_out
+
+    @staticmethod
+    def write_cellrange(name, file, sheet, cellrange):
+        wb = openpyxl.load_workbook(file)
+        sheetId = [sheetname_wb.lower() for sheetname_wb
+                    in wb.sheetnames].index(sheet.lower())
+        existing_names = wb.defined_names.localnames(sheetId)
+        if name in existing_names and\
+          wb.defined_names.get(name, sheetId).attr_text == cellrange:
+            # cellrange already defined with same name and coordinates
+            wb.close()
+            return
+        new_range = openpyxl.workbook.defined_name.DefinedName(
+            name, attr_text=cellrange, localSheetId=sheetId)
+        wb.defined_names.append(new_range)
+        wb.save(file)
+
 
 
     @staticmethod
@@ -163,18 +186,22 @@ class ExternalVariable(object):
             return
 
 class Lookups(ExternalVariable):
-    def __init__(self, var_name, dims, file=None, sheet=None):
-        super().__init__(var_name, dims, file, sheet)
+    def __init__(self, var_name, dims, cell, description='', units='',
+                 file=None, sheet=None):
+        super().__init__(var_name, dims, cell, description, units, file, sheet)
 
 
 class Data(ExternalVariable):
-    def __init__(self, var_name, dims, file=None, sheet=None, interp=None):
-        super().__init__(var_name, dims, file, sheet)
+    def __init__(self, var_name, dims, cell, description='', units='',
+                 file=None, sheet=None, interp=None):
+        super().__init__(var_name, dims, cell, description, units, file, sheet)
         self.interp = interp
 
 class Constants(ExternalVariable):
-    def __init__(self, var_name, dims, cell, file=None, sheet=None):
-        super().__init__(var_name, dims, cell, file, sheet)
+    def __init__(self, var_name, dims, cell, description='', units='',
+                 file=None, sheet=None, **kwargs):
+        super().__init__(var_name, dims, cell, description, units, file, sheet)
+        self.transpose = False
 
     def get_vensim(self):
         elements = {
@@ -184,48 +211,91 @@ class Constants(ExternalVariable):
             'sheet': [[]],
             'file': [[]]
         }
+        visited = []
         for dim in self.dims:
             read_along, step = self.dims_dict[dim]
             if step == 1:
                 # append only subscript range name
-                self.add_info(elements, [dim], read_along, len(subscript_dict[dim])-1)
+                self.add_info(elements, [dim],
+                              read_along,
+                              len(subscript_dict[dim])-1)
+
+                visited.append(read_along)
 
             elif isinstance(step, int):
                 # append list of subscripts in subscript range
-                self.add_info(elements, subscript_dict[dim], read_along, range(0, step*len(subscript_dict[dim]), step))
+                self.add_info(elements, subscript_dict[dim],
+                              read_along,
+                              range(0, step*len(subscript_dict[dim]), step))
                 # steps: [0, step, 2*step, ..., (n_subs-1)*step]
             else:
                 # append list of subscripts in subscript range
-                self.add_info(elements, subscript_dict[dim], read_along, step)
+                self.add_info(elements, subscript_dict[dim],
+                              read_along,
+                              step)
 
         if not elements['file'][0]:
             elements['file'] = [self.file] * len(elements['file'])
         if not elements['sheet'][0]:
             elements['sheet'] = [self.sheet] * len(elements['sheet'])
 
+        # transpose with *
+        if visited in [["row"], ["col", "row"]]:
+            self.transpose = True
+
         # convert cols to alpha
-        elements['col'] = [[self._num_to_col(col) for col in element] for element in elements['col']]
+        elements['col'] = [[self._num_to_col(col) for col in element]
+                           for element in elements['col']]
 
         # convert rows to excel numering
-        elements['row'] = [[row+1 for row in element] for element in elements['row']]
+        elements['row'] = [[row+1 for row in element]
+                           for element in elements['row']]
 
         # writting information
-        elements['write'] = [
+        elements['cellrange'] = [
             '%s!$%s$%s:$%s$%s' % (sheet, cols[0], rows[0], cols[1], rows[1])
             for sheet, cols, rows in\
             zip(elements['sheet'], elements['col'], elements['row'])
         ]
 
-        counter = 1
+        # dictionary to manage cellrange names
+        if len(elements['sheet']) / (len(set(elements['sheet'])) * len(set(elements['file']))) > 1:
+            added = {file: {sheet: 0 for sheet in set(elements['sheet'])}
+                     for file in set(elements['file'])}
+        else:
+            added = None
 
-        for file, sheet, write in zip(elements['file'], elements['sheet'], elements['write']):
-            wb = openpyxl.load_workbook(file)
-            sheetId = [sheetname_wb.lower() for sheetname_wb
-                       in wb.sheetnames].index(sheet.lower())
-            new_range = openpyxl.workbook.defined_name.DefinedName(f'{self.var_name}_{counter}', attr_text=write, localSheetId=sheetId)
-            wb.defined_names.append(new_range)
-            wb.save(file)
-            counter += 1
+        elements['cellname'] = []
+        for file, sheet, cellrange in zip(elements['file'],
+                                          elements['sheet'],
+                                          elements['cellrange']):
+            if added:
+                added[file][sheet] += 1
+                name = f'{self.var_name}_{added[file][sheet]}'
+            else:
+                name = self.var_name
+            elements['cellname'].append(name)
+            self.write_cellrange(name, file, sheet, cellrange)
+
+        vensim_eqs = ""
+        for subs, file, sheet, cellname in zip(elements['subs'],
+                                               elements['file'],
+                                               elements['sheet'],
+                                               elements['cellname']):
+            if self.transpose:
+                cellname += '*'
+            vensim_eq=f"""
+            {self.var_name}[{', '.join(map(str, subs))}]=
+            \tGET_DIRECT_CONSTANTS('{file}', '{sheet}', '{cellname}') ~~|"""
+
+            vensim_eqs += vensim_eq
+
+        vensim_eqs = textwrap.dedent(vensim_eqs)
+        vensim_eqs = vensim_eqs[:-4]\
+                     + f'\n\t~\t{self.units}'\
+                     + f'\n\t~\t{self.description}'\
+                     + '\n\t|'
+        print(vensim_eqs)
 
 
 
