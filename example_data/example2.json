@@ -4,7 +4,8 @@
     "file": "example_data/inputs.xlsx",
     "sheet": "Region1",
     "description": "This is my second variable.",
-    "units": "dmnl", "dimensions": {
+    "units": "dmnl",
+    "dimensions": {
         "sector": ["col", 1],
         "source": ["row", 1],
         "out": ["row", 3]
