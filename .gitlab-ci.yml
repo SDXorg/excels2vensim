@@ -1,0 +1,16 @@
+before_script:
+  - apt update -qy
+  - apt install -y python3.7 python3-pip
+  - python3 -m pip install --upgrade pip
+  - python3 -m pip install .
+
+tests:
+  stage: test
+  script:
+    - python3 -m pip install pytest pytest-cov coverage
+    - cd tests
+    - pytest --cov=excels2vensim *.py
+    - coverage xml
+  artifacts:
+    reports:
+      cobertura: tests/coverage.xml

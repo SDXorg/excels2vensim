@@ -18,6 +18,34 @@ subscript_dict = {'sector': ['A', 'B', 'C', 'D'],
                   'gender':  ['female', 'male']
 }
 
+class Excels():
+    """
+    Class to save the read Excel files and thus avoid double reading
+    """
+    _Excels = {}
+
+    @classmethod
+    def read(cls, file):
+        """
+        Read the Excel file using OpenPyXL or return the previously read one
+        """
+        if file in cls._Excels:
+            return cls._Excels[file]
+        else:
+            excel = openpyxl.load_workbook(file)
+            cls._Excels[file] = excel
+            return excel
+
+    @classmethod
+    def save_and_close(cls):
+        """
+        Saves and closes the Excel files
+        """
+        for file, wb in cls._Excels.items():
+            wb.save(file)
+            wb.close()
+
+        cls._Excels = {}
 
 class ExternalVariable(object):
     def __init__(self, var_name, dims, cell, description, units, file, sheet):
@@ -363,7 +391,7 @@ class ExternalVariable(object):
         None
 
         """
-        wb = openpyxl.load_workbook(file)
+        wb = Excels.read(file)
         sheetId = [sheetname_wb.lower() for sheetname_wb
                     in wb.sheetnames].index(sheet.lower())
 
@@ -371,14 +399,11 @@ class ExternalVariable(object):
         if name in existing_names and\
           wb.defined_names.get(name, sheetId).attr_text == cellrange:
             # cellrange already defined with same name and coordinates
-            wb.close()
             return
 
         new_range = openpyxl.workbook.defined_name.DefinedName(
             name, attr_text=cellrange, localSheetId=sheetId)
         wb.defined_names.append(new_range)
-        wb.save(file)
-        wb.close()
 
     @staticmethod
     def _col_to_num(col):
@@ -520,6 +545,10 @@ class Lookups(ExternalVariable):
             elements['sheet'], elements['cellrange'],
             added)
 
+        # save changes and close Excel files
+        Excels.save_and_close()
+
+        # generate Vensim equations
         vensim_eqs = ""
         for subs, file, sheet, cellname in zip(elements['subs'],
                                                elements['file'],
@@ -597,6 +626,10 @@ class Data(ExternalVariable):
             elements['sheet'], elements['cellrange'],
             added)
 
+        # save changes and close Excel files
+        Excels.save_and_close()
+
+        # generate Vensim equations
         vensim_eqs = ""
         for subs, file, sheet, cellname in zip(elements['subs'],
                                                elements['file'],
@@ -605,6 +638,7 @@ class Data(ExternalVariable):
             vensim_eq = f"""
             {self.var_name}[{', '.join(map(str, subs))}]"""
             if self.interp:
+                # add keyword for interpolation method
                 vensim_eq += f":{self.interp.upper()}::="
             else:
                 vensim_eq += ":="
@@ -646,6 +680,10 @@ class Constants(ExternalVariable):
             elements['sheet'], elements['cellrange'],
             added)
 
+        # save changes and close Excel files
+        Excels.save_and_close()
+
+        # generate Vensim equations
         vensim_eqs = ""
         for subs, file, sheet, cellname in zip(elements['subs'],
                                                elements['file'],

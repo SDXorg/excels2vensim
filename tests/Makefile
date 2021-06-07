@@ -22,15 +22,15 @@ endif
 
 cover: clean
         ifeq ($(NUM_PROC), 1)
-		pytest --cov=sdqc --cov-report term *.py
+		pytest --cov=excels2vensim --cov-report term *.py
         else
-		pytest --cov=sdqc --cov-report term *.py -n $(NUM_PROC)
+		pytest --cov=excels2vensim --cov-report term *.py -n $(NUM_PROC)
 endif
 
 coverhtml: clean
         ifeq ($(NUM_PROC), 1)
-		pytest --cov=sdqc --cov-report html --cov-report term *.py
+		pytest --cov=excels2vensim --cov-report html --cov-report term *.py
         else
-		pytest --cov=sdqc --cov-report html --cov-report term *.py -n $(NUM_PROC)
+		pytest --cov=excels2vensim --cov-report html --cov-report term *.py -n $(NUM_PROC)
 endif
 

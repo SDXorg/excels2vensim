@@ -1,3 +1,6 @@
 .~*#
+htmlcov
+new_files
+.coverage
 .ipynb_checkpoints
 __pycache__

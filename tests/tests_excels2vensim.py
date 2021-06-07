@@ -3,12 +3,15 @@ Tests for the general functioning of the library
 """
 
 import shutil
+from pathlib import Path
+
 import excels2vensim
 
 
 def test_constants():
 
     # copy original file without data
+    Path("new_files").mkdir(parents=True, exist_ok=True)
     shutil.copy2('original_files/inputs.xlsx', 'new_files/inputs.xlsx')
 
     obj1 = excels2vensim.Constants(
@@ -57,6 +60,7 @@ def test_constants():
 def test_data():
 
     # copy original file without cellranges
+    Path("new_files").mkdir(parents=True, exist_ok=True)
     shutil.copy2('original_files/inputs_data.xlsx',
                  'new_files/inputs_data.xlsx')
 
@@ -103,6 +107,7 @@ def test_data():
 def test_lookup():
 
     # copy original file without cellranges
+    Path("new_files").mkdir(parents=True, exist_ok=True)
     shutil.copy2('original_files/inputs_data.xlsx',
                  'new_files/inputs_data_l.xlsx')
 
