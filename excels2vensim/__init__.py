@@ -1,1 +1,1 @@
-from .excels2vensim import Lookups, Data, Constants
+from .excels2vensim import Lookups, Data, Constants, load_from_json

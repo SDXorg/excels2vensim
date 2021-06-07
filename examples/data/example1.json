@@ -1,21 +1,23 @@
 {
 "q_row": {
+    "type": "Constants",
     "dims": ["source"],
     "cell": "A24",
-    "file": "example_data/inputs.xlsx",
+    "file": "data/inputs_constants.xlsx",
     "sheet": "Region1",
-    "description": "This is my variable q_row read from B18:B20.",
+    "description": "This is my variable q_row.",
     "units": "TWh",
     "dimensions": {
         "source": ["col", 1]
         }
     },
 "q_col": {
+    "type": "Constants",
     "dims": ["source"],
     "cell": "B18",
-    "file": "example_data/inputs.xlsx",
+    "file": "data/inputs_constants.xlsx",
     "sheet": "Region1",
-    "description": "This is my variable q_col read from A24:C24.",
+    "description": "This is my variable q_col.",
     "units": "TWh",
     "dimensions": {
         "source": ["row", 1]

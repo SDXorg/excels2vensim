@@ -3,4 +3,5 @@ htmlcov
 new_files
 .coverage
 .ipynb_checkpoints
+excels2vensim.egg-info/
 __pycache__

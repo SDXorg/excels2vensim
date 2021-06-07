@@ -1,0 +1,87 @@
+{UTF-8}
+out:
+	Elec, Heat, Solid, Liquid
+	~	
+	~		|
+
+region:
+	Region1, Region2, Region3, Region4
+	~	
+	~		|
+
+sector:
+	A, B, C, D
+	~	
+	~		|
+
+source:
+	Gas, Oil, Coal
+	~	
+	~		|
+
+
+********************************************************
+	.Control
+********************************************************~
+		Simulation Control Parameters
+	|
+
+FINAL TIME  = 10
+	~	Month
+	~	The final time for the simulation.
+	|
+
+INITIAL TIME  = 0
+	~	Month
+	~	The initial time for the simulation.
+	|
+
+SAVEPER  = 
+        TIME STEP 
+	~	Month [0,?]
+	~	The frequency with which output is stored.
+	|
+
+TIME STEP  = 1
+	~	Month [0,?]
+	~	The time step for the simulation.
+	|
+
+\\\---/// Sketch information - do not modify anything except names
+V300  Do not put anything below this section - it will be ignored
+*View 1
+$192-192-192,0,Times New Roman|12||0-0-0|0-0-0|0-0-255|-1--1--1|-1--1--1|96,96,100,0
+10,1,share energy,322,237,40,11,8,3,0,0,0,0,0,0
+10,2,q col,349,160,17,11,8,3,0,0,0,0,0,0
+10,3,q row,290,77,20,11,8,3,0,0,0,0,0,0
+10,4,share energy2,445,104,44,11,8,3,0,0,-1,0,0,0
+///---\\\
+:L<%^E!@
+1:Current.vdf
+9:Current
+15:0,0,0,0,0,0
+19:100,0
+27:0,
+34:0,
+4:Time
+5:q row[source]
+35:Date
+36:YYYY-MM-DD
+37:2000
+38:1
+39:1
+40:2
+41:0
+42:1
+24:0
+25:10
+26:10
+6:A
+6:B
+6:C
+6:Coal
+6:D
+6:Elec
+6:Gas
+6:Oil
+6:Region1

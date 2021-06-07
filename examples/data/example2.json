@@ -1,7 +1,8 @@
 {"share_energy_region1": {
+    "type": "Constants",
     "dims": ["sector", "source", "out"],
     "cell": "C4",
-    "file": "example_data/inputs.xlsx",
+    "file": "data/inputs_constants.xlsx",
     "sheet": "Region1",
     "description": "This is my second variable.",
     "units": "dmnl",

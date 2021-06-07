@@ -2,6 +2,7 @@
 Tests for the general functioning of the library
 """
 
+import sys
 import shutil
 from pathlib import Path
 

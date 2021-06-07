@@ -1,6 +1,7 @@
 import re
 import textwrap
 import string
+import json
 
 import numpy as np
 import openpyxl
@@ -705,7 +706,47 @@ class Constants(ExternalVariable):
         print(vensim_eqs)
 
 
+def load_from_json(json_file):
+    """
+    Run the features using a JSON file.
 
+    Prameters
+    ---------
+    json_file: str
+        Name of the JSON file with the needed information.
 
+    Returns
+    -------
+    None
 
+    """
+    vars_dict = json.load(open(json_file))
 
+    for var, info in vars_dict.items():
+        if info['type'].lower() == 'constants':
+            # create object
+            obj = Constants(var, **info)
+            # add dimensions
+            for dimension, along in info['dimensions'].items():
+                obj.add_dimension(dimension, *along)
+            obj.get_vensim()
+
+        elif info['type'].lower() == 'lookups':
+            # create object
+            obj = Lookups(var, **info)
+            # add dimensions
+            for dimension, along in info['dimensions'].items():
+                obj.add_dimension(dimension, *along)
+            # add x series
+            obj.add_x(**info['x'])
+            obj.get_vensim()
+
+        elif info['type'].lower() == 'data':
+            # create object
+            obj = Data(var, **info)
+            # add dimensions
+            for dimension, along in info['dimensions'].items():
+                obj.add_dimension(dimension, *along)
+            # add time series
+            obj.add_time(**info['time'])
+            obj.get_vensim()
