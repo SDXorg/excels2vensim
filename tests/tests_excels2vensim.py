@@ -2,11 +2,11 @@
 Tests for the general functioning of the library
 """
 
-import sys
+import subprocess
 import shutil
 from pathlib import Path
 
-import excels2vensim
+import excels2vensim as e2v
 
 
 def test_constants():
@@ -15,7 +15,9 @@ def test_constants():
     Path("new_files").mkdir(parents=True, exist_ok=True)
     shutil.copy2('original_files/inputs.xlsx', 'new_files/inputs.xlsx')
 
-    obj1 = excels2vensim.Constants(
+    e2v.Subscripts.set({'source': ['Gas', 'Oil', 'Coal']})
+
+    obj1 = e2v.Constants(
         'q_row',
         ['source'],
         'A24',
@@ -28,7 +30,7 @@ def test_constants():
 
     obj1.get_vensim()
 
-    obj2 = excels2vensim.Constants(
+    obj2 = e2v.Constants(
         'q_col',
         ['source'],
         'B18',
@@ -41,22 +43,14 @@ def test_constants():
 
     obj2.get_vensim()
 
-    obj4 = excels2vensim.Constants(
-        'share_energy',
-        ['source', 'sector', 'region', 'out'],
-        'C4',
-        'This is my variable',
-        'dmnl',
-        'new_files/inputs.xlsx',
-        None)
+    # add more subscripts (check update method)
+    e2v.Subscripts.update({
+        'sector': ['A', 'B', 'C', 'D'],
+        'region': ['Region1', 'Region2', 'Region3', 'Region4'],
+        'out': ['Elec', 'Heat', 'Solid', 'Liquid']})
 
-    obj4.add_dimension('source', 'row')
-    obj4.add_dimension('sector', 'col')
-    obj4.add_dimension('out', 'row', 3)
-    obj4.add_dimension('region', 'sheet',
-                       ['Region1', 'Region2', 'Region3', 'Region4'])
+    e2v.load_from_json('jsons/constants.json')
 
-    obj4.get_vensim()
 
 def test_data():
 
@@ -65,88 +59,23 @@ def test_data():
     shutil.copy2('original_files/inputs_data.xlsx',
                  'new_files/inputs_data.xlsx')
 
-    obj1 = excels2vensim.Data(
-        'var1',
-        ['age', 'regions9', 'gender'],
-        'E5',
-        'Total population',
-        'people',
-        'new_files/inputs_data.xlsx',
-        'GPH')
+    # read subscripts from a mdl file
+    e2v.Subscripts.read('subscripts/data.mdl')
 
-    obj1.add_dimension('regions9', 'row', 34)
-    obj1.add_dimension('gender', 'row', 17)
-    obj1.add_dimension('age', 'row')
-    obj1.add_time('year', 'E4', 'col', 16)
+    # test load_from_json
+    e2v.load_from_json('jsons/data.json')
 
-    obj1.get_vensim()
-
-    # copy original file without cellranges
-    shutil.copy2('original_files/inputs_data2.xlsx',
-                 'new_files/inputs_data2.xlsx')
-
-    obj2 = excels2vensim.Data(
-        'var2',
-        ['age', 'regions9', 'gender'],
-        'D5',
-        'Total population',
-        'people',
-        'new_files/inputs_data2.xlsx',
-        'GPH',
-        'hold backward')
-
-    obj2.add_dimension('regions9', 'sheet', [
-        'EU27', 'UK', 'CNHK', 'EASTOC', 'IND',
-        'LATAM', 'RUS', 'USMCA', 'LROW'
-        ])
-    obj2.add_dimension('gender', 'row', 17)
-    obj2.add_dimension('age', 'row')
-    obj2.add_time('year', 'd4', 'col', 16)
-
-    obj2.get_vensim()
 
 def test_lookup():
 
     # copy original file without cellranges
     Path("new_files").mkdir(parents=True, exist_ok=True)
-    shutil.copy2('original_files/inputs_data.xlsx',
-                 'new_files/inputs_data_l.xlsx')
-
-    obj1 = excels2vensim.Lookups(
-        'var1',
-        ['age', 'gender', 'regions9'],
-        'E5',
-        'Total population',
-        'people',
-        'new_files/inputs_data_l.xlsx',
-        'GPH')
-
-    obj1.add_dimension('regions9', 'row', 34)
-    obj1.add_dimension('gender', 'row', 17)
-    obj1.add_dimension('age', 'row')
-    obj1.add_x('year', 'E4', 'col', 16)
-
-    obj1.get_vensim()
-
-    # copy original file without cellranges
     shutil.copy2('original_files/inputs_data2.xlsx',
-                 'new_files/inputs_data2_l.xlsx')
+                 'new_files/inputs_data2.xlsx')
 
-    obj2 = excels2vensim.Lookups(
-        'var2',
-        ['regions9', 'gender', 'age'],
-        'D5',
-        'Total population',
-        'people',
-        'new_files/inputs_data2_l.xlsx',
-        'GPH')
+    # test command line
+    result = subprocess.run([
+        "python3", "-m", "excels2vensim", "subscripts/data_subscripts.json",
+        "jsons/lookups.json"], capture_output=True)
 
-    obj2.add_dimension('regions9', 'sheet', [
-        'EU27', 'UK', 'CNHK', 'EASTOC', 'IND',
-        'LATAM', 'RUS', 'USMCA', 'LROW'
-        ])
-    obj2.add_dimension('gender', 'row', 17)
-    obj2.add_dimension('age', 'row')
-    obj2.add_x('year', 'd4', 'col', 16)
 
-    obj2.get_vensim()

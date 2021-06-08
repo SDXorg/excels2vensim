@@ -1,0 +1,22 @@
+{
+"population": {
+    "type": "DATA",
+    "dims": ["AGE COHORT", "REGIONS", "GENDER"],
+    "cell": "D5",
+    "file": "new_files/inputs_data.xlsx",
+    "sheet": "GPH",
+    "description": "Total population per age, region and gender.",
+    "units": "People",
+    "dimensions": {
+        "REGIONS": ["row", 34],
+        "GENDER": ["row", 17],
+        "AGE COHORT": ["row", 1]
+        },
+    "time": {
+        "name": "time",
+        "cell": "D4",
+        "read_along": "col",
+        "length": 16
+        }
+    }
+}
