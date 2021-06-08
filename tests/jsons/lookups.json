@@ -1,0 +1,24 @@
+{
+"population": {
+    "type": "lookups",
+    "dims": ["GENDER", "AGE COHORT", "REGIONS"],
+    "cell": "E5",
+    "file": "new_files/inputs_data2.xlsx",
+    "description": "Total population per gender, age and region.",
+    "units": "People",
+    "dimensions": {
+        "REGIONS": ["sheet", [
+            "EU27", "UK", "CNHK", "EASTOC", "IND",
+            "LATAM", "RUS", "USMCA", "LROW"
+            ]],
+        "GENDER": ["row", 17],
+        "AGE COHORT": ["row", 1]
+        },
+    "x": {
+        "name": "time",
+        "cell": "E4",
+        "read_along": "col",
+        "length": 16
+        }
+    }
+}

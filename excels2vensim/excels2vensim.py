@@ -1,3 +1,4 @@
+import os
 import re
 import textwrap
 import string
@@ -6,18 +7,63 @@ import json
 import numpy as np
 import openpyxl
 
+from .subscript_parser import get_subscripts
 
-subscript_dict = {'sector': ['A', 'B', 'C', 'D'],
-                  'region': ['Region1', 'Region2', 'Region3', 'Region4'],
-                  'source': ['Gas', 'Oil', 'Coal'],
-                  'out': ['Elec', 'Heat', 'Solid', 'Liquid'],
-                  'age': ['0-4', '5-9', '10-14', '15-19', '20-24', '25-29',
-                          '30-34', '35-39', '40-44', '45-49', '50-54', '55-59',
-                          '60-64', '65-69', '70-74', '75-79', '80+'],
-                  'regions9': ['EU27', 'UK', 'CHINA', 'EASTOC', 'INDIA',
-                               'LATAM', 'RUS', 'USMCA', 'LROW'],
-                  'gender':  ['female', 'male']
-}
+class Subscripts():
+    """
+    Class to save the subscript dictionary.
+    """
+    _subscript_dict = {}
+
+    @classmethod
+    def read(cls, file):
+        """
+        Read the subscripts form a .mdl or .json file.
+        """
+        file_ini, file_extension = os.path.splitext(file)
+        if file_extension.lower() == ".mdl":
+            cls._subscript_dict = get_subscripts(
+                file, file_ini + '_subscripts.json')
+        elif file_extension.lower() == ".json":
+            cls._subscript_dict = json.load(open(file))
+        else:
+            pass
+
+    @classmethod
+    def get(cls, key):
+        """
+        Get the value of key of _subscript_dict.
+        """
+        return cls._subscript_dict[key]
+
+    @classmethod
+    def get_ranges(cls):
+        """
+        Get the list of keys of _subscript_dict.
+        """
+        return list(cls._subscript_dict)
+
+    @classmethod
+    def set(cls, dict):
+        """
+        Set _subscript_dict to input value.
+        """
+        cls.clean()
+        cls.update(dict)
+
+    @classmethod
+    def update(cls, dict):
+        """
+        Update _subscript_dict
+        """
+        cls._subscript_dict.update(dict)
+
+    @classmethod
+    def clean(cls):
+        """
+        Cleans the subscript dict
+        """
+        cls._subscript_dict = {}
 
 class Excels():
     """
@@ -85,6 +131,11 @@ class ExternalVariable(object):
         None
 
         """
+        if dim_name not in Subscripts.get_ranges():
+            raise ValueError(
+                f'\n{dim_name} is not in the list of subscript ranges:\n\t'
+                + str(Subscripts.get_ranges()))
+
         self.dims_dict[dim_name] = (read_along, sep)
 
     def add_series(self, name, cell, read_along, length):
@@ -125,7 +176,7 @@ class ExternalVariable(object):
             cols = [ref_col, ref_col + length -1]
         else:
             raise ValueError(
-                "read_along must be 'row' or 'col'."
+                "\nread_along must be 'row' or 'col'."
             )
 
         # add series cellrange name without specifiying the sheet
@@ -190,20 +241,20 @@ class ExternalVariable(object):
                 # append only subscript range name
                 self.add_info(elements, [dim],
                               read_along,
-                              len(subscript_dict[dim])-1)
+                              len(Subscripts.get(dim))-1)
 
                 visited.append(read_along)
 
             elif isinstance(step, int):
                 # append list of subscripts in subscript range
-                self.add_info(elements, subscript_dict[dim],
+                self.add_info(elements, Subscripts.get(dim),
                               read_along,
-                              range(0, step*len(subscript_dict[dim]), step))
+                              range(0, step*len(Subscripts.get(dim)), step))
                 # steps: [0, step, 2*step, ..., (n_subs-1)*step]
             else:
                 # read along file of sheet
                 # append list of subscripts in subscript range
-                self.add_info(elements, subscript_dict[dim],
+                self.add_info(elements, Subscripts.get(dim),
                               read_along,
                               step)
                 visited.append(read_along)
@@ -211,7 +262,7 @@ class ExternalVariable(object):
         for dim in ['col', 'row']:
             if visited.count(dim) > 1:
                 raise ValueError(
-                    f"Two or more dimensions are defined along {dim}"
+                    f"\nTwo or more dimensions are defined along {dim}"
                     " with step 1.")
 
         for dim in ['file', 'sheet']:
@@ -225,7 +276,7 @@ class ExternalVariable(object):
             else:
                 # 2 or more dimensions defined along sheet or file
                 raise ValueError(
-                    f"Two or more dimensions are defined along {dim}")
+                    f"\nTwo or more dimensions are defined along {dim}.")
 
         # dictionary to manage cellrange names
         if len(elements['sheet']) * len(elements['file'])\
@@ -363,13 +414,13 @@ class ExternalVariable(object):
             else:
                 name = base_name
 
-            self.write_cellrange(name, file, sheet, cellrange)
+            self.write_cellrange(name, file, sheet, cellrange, self.force)
             written_names.append(name)
 
         return written_names
 
     @staticmethod
-    def write_cellrange(name, file, sheet, cellrange):
+    def write_cellrange(name, file, sheet, cellrange, force):
         """
         Writes cellranges using openpyxl
 
@@ -394,13 +445,21 @@ class ExternalVariable(object):
         """
         wb = Excels.read(file)
         sheetId = [sheetname_wb.lower() for sheetname_wb
-                    in wb.sheetnames].index(sheet.lower())
+                   in wb.sheetnames].index(sheet.lower())
 
         existing_names = wb.defined_names.localnames(sheetId)
-        if name in existing_names and\
-          wb.defined_names.get(name, sheetId).attr_text == cellrange:
-            # cellrange already defined with same name and coordinates
-            return
+        if name in existing_names:
+            if wb.defined_names.get(name, sheetId).attr_text == cellrange:
+                # cellrange already defined with same name and coordinates
+                return
+            elif force:
+                wb.defined_names.delete(name, sheetId)
+            else:
+                raise ValueError(
+                    f"\nTrying to write a cellrange with name {name} at "
+                    + f"{cellrange}. However, {name} already exist in "
+                    + f"{wb.defined_names.get(name, sheetId).attr_text}\n"
+                    + "Use force=True to overwrite it.")
 
         new_range = openpyxl.workbook.defined_name.DefinedName(
             name, attr_text=cellrange, localSheetId=sheetId)
@@ -409,18 +468,18 @@ class ExternalVariable(object):
     @staticmethod
     def _col_to_num(col):
         """
-        FUNCTION FROM PYSD
-        Transforms the column name to int
+        Transforms the column name to int.
 
         Parameters
         ----------
         col: str
-          Column name
+          Column name.
 
         Returns
         -------
         int
-          Column number
+          Column number starting from 0.
+
         """
         if len(col) == 1:
             return ord(col.upper()) - ord('A')
@@ -439,7 +498,18 @@ class ExternalVariable(object):
     @staticmethod
     def _num_to_col(num):
         """
-        From and old PR to PySD by Julien Malard
+        Transforms the column number to name.
+
+        Parameters
+        ----------
+        num: int
+          Column number starting from 0.
+
+        Returns
+        -------
+        str
+          Column name.
+
         """
         chars = []
         num += 1
@@ -457,7 +527,6 @@ class ExternalVariable(object):
 
     def _split_excel_cell(self, cell):
         """
-        FUNCTION FROM PYSD
         Splits a cell value given in a string.
         Returns None for non-valid cell formats.
 
@@ -489,8 +558,43 @@ class ExternalVariable(object):
             return
 
 class Lookups(ExternalVariable):
+    """
+    Class for creating GET DIRECT/XLS LOOKUPS equations and cellranges.
+    """
     def __init__(self, var_name, dims, cell, description='', units='',
-                 file=None, sheet=None):
+                 file=None, sheet=None, **kwargs):
+        """
+        Parameters
+        ----------
+        var_name: str
+            The name of the variable in Vensim code and basestring for
+            cellrange names.
+
+        dims: list
+            List of the dimensions of the variable in the same order that
+            will be created the variable in the Vensim code.
+
+        cell: str
+            Reference cell of the data. First cellw with numeric values
+            (upper-left corner).
+
+        description: str (optional)
+            Description to include in the Vensim equations. By default no
+            description will be included.
+
+        units: str (optional)
+            Units to include in the Vensim equations. By default no
+            units will be included.
+
+        file: str (optional)
+            File where the data is. This argument is mandatory unless a
+            subscript range is defined across several files. Default is None.
+
+        sheet: str (optional)
+            Sheet where the data is. This argument is mandatory unless a
+            subscript range is defined across several sheets. Default is None.
+
+        """
         super().__init__(var_name, dims, cell, description, units, file, sheet)
 
     def add_x(self, name, cell, read_along, length):
@@ -518,7 +622,31 @@ class Lookups(ExternalVariable):
         """
         super().add_series(name, cell, read_along, length)
 
-    def get_vensim(self):
+    def get_vensim(self, force=False, loading='DIRECT'):
+        """
+        Get vensim ewuations and write cell range names in the Excel file.
+
+        Parameters
+        ----------
+        force: bool (optional)
+            If True and trying and tryting to write a cell range name
+            that already exist in other positions it will overwrite it
+            (not recommended). If False it will return and error when
+            trying to write the new cellrange name. Default is False.
+
+        loading: str (optional)
+            Vensing GET loading type it can be 'DIRECT' or 'XLS'.
+            Default is 'DIRECT'.
+
+        Returns
+        -------
+        vensim_eqs: str
+            The string of Vensim equations to copy in the model .mdl file.
+
+        """
+        # force removal of conflicting cellrange names
+        self.force = force
+
         elements = {
             'row': [np.array([self.ref_row, self.ref_row], dtype=int)],
             'col': [np.array([self.ref_col, self.ref_col], dtype=int)],
@@ -557,7 +685,7 @@ class Lookups(ExternalVariable):
                                                elements['cellname']):
             vensim_eq = f"""
             {self.var_name}[{', '.join(map(str, subs))}]=
-            \tGET_DIRECT_LOOKUPS('{file}', '{sheet}', '{self.series['name']}', '{cellname}') ~~|"""
+            \tGET_{loading}_LOOKUPS('{file}', '{sheet}', '{self.series['name']}', '{cellname}') ~~|"""
 
             vensim_eqs += vensim_eq
 
@@ -566,11 +694,54 @@ class Lookups(ExternalVariable):
                      + f'\n\t~\t{self.units}'\
                      + f'\n\t~\t{self.description}'\
                      + '\n\t|'
-        print(vensim_eqs)
+
+        return vensim_eqs
 
 class Data(ExternalVariable):
+    """
+    Class for creating GET DIRECT/XLS DATA equations and cellranges.
+    """
     def __init__(self, var_name, dims, cell, description='', units='',
-                 file=None, sheet=None, interp=None):
+                 file=None, sheet=None, interp=None, **kwargs):
+        """
+        Parameters
+        ----------
+        var_name: str
+            The name of the variable in Vensim code and basestring for
+            cellrange names.
+
+        dims: list
+            List of the dimensions of the variable in the same order that
+            will be created the variable in the Vensim code.
+
+        cell: str
+            Reference cell of the data. First cellw with numeric values
+            (upper-left corner).
+
+        description: str (optional)
+            Description to include in the Vensim equations. By default no
+            description will be included.
+
+        units: str (optional)
+            Units to include in the Vensim equations. By default no
+            units will be included.
+
+        file: str (optional)
+            File where the data is. This argument is mandatory unless a
+            subscript range is defined across several files. Default is None.
+
+        sheet: str (optional)
+            Sheet where the data is. This argument is mandatory unless a
+            subscript range is defined across several sheets. Default is None.
+
+        interp: str or None (optional)
+             Keyword of the interpolation method to use with DATA. It can be
+             any keyword accepted by Vensim 'interpolate', 'look forward',
+             'keep backward' or 'raw'. If None, no keyword will be added,
+             Vensim will use the default interpolation method ('interpolate').
+             Default is None.
+
+        """
         super().__init__(var_name, dims, cell, description, units, file, sheet)
         self.interp = interp
 
@@ -599,7 +770,31 @@ class Data(ExternalVariable):
         """
         super().add_series(name, cell, read_along, length)
 
-    def get_vensim(self):
+    def get_vensim(self, force=False, loading='DIRECT'):
+        """
+        Get vensim ewuations and write cell range names in the Excel file.
+
+        Parameters
+        ----------
+        force: bool (optional)
+            If True and trying and tryting to write a cell range name
+            that already exist in other positions it will overwrite it
+            (not recommended). If False it will return and error when
+            trying to write the new cellrange name. Default is False.
+
+        loading: str (optional)
+            Vensing GET loading type it can be 'DIRECT' or 'XLS'.
+            Default is 'DIRECT'.
+
+        Returns
+        -------
+        vensim_eqs: str
+            The string of Vensim equations to copy in the model .mdl file.
+
+        """
+        # force removal of conflicting cellrange names
+        self.force = force
+
         elements = {
             'row': [np.array([self.ref_row, self.ref_row], dtype=int)],
             'col': [np.array([self.ref_col, self.ref_col], dtype=int)],
@@ -644,7 +839,7 @@ class Data(ExternalVariable):
             else:
                 vensim_eq += ":="
             vensim_eq += f"""
-            \tGET_DIRECT_DATA('{file}', '{sheet}', '{self.series['name']}', '{cellname}') ~~|"""
+            \tGET_{loading}_DATA('{file}', '{sheet}', '{self.series['name']}', '{cellname}') ~~|"""
 
             vensim_eqs += vensim_eq
 
@@ -653,15 +848,75 @@ class Data(ExternalVariable):
                      + f'\n\t~\t{self.units}'\
                      + f'\n\t~\t{self.description}'\
                      + '\n\t|'
-        print(vensim_eqs)
+
+        return vensim_eqs
 
 class Constants(ExternalVariable):
+    """
+    Class for creating GET DIRECT/XLS CONSTANTS equations and cellranges.
+    """
     def __init__(self, var_name, dims, cell, description='', units='',
                  file=None, sheet=None, **kwargs):
+        """
+        Parameters
+        ----------
+        var_name: str
+            The name of the variable in Vensim code and basestring for
+            cellrange names.
+
+        dims: list
+            List of the dimensions of the variable in the same order that
+            will be created the variable in the Vensim code.
+
+        cell: str
+            Reference cell of the data. First cellw with numeric values
+            (upper-left corner).
+
+        description: str (optional)
+            Description to include in the Vensim equations. By default no
+            description will be included.
+
+        units: str (optional)
+            Units to include in the Vensim equations. By default no
+            units will be included.
+
+        file: str (optional)
+            File where the data is. This argument is mandatory unless a
+            subscript range is defined across several files. Default is None.
+
+        sheet: str (optional)
+            Sheet where the data is. This argument is mandatory unless a
+            subscript range is defined across several sheets. Default is None.
+
+        """
         super().__init__(var_name, dims, cell, description, units, file, sheet)
         self.transpose = False
 
-    def get_vensim(self):
+    def get_vensim(self, force=False, loading='DIRECT'):
+        """
+        Get vensim ewuations and write cell range names in the Excel file.
+
+        Parameters
+        ----------
+        force: bool (optional)
+            If True and trying and tryting to write a cell range name
+            that already exist in other positions it will overwrite it
+            (not recommended). If False it will return and error when
+            trying to write the new cellrange name. Default is False.
+
+        loading: str (optional)
+            Vensing GET loading type it can be 'DIRECT' or 'XLS'.
+            Default is 'DIRECT'.
+
+        Returns
+        -------
+        vensim_eqs: str
+            The string of Vensim equations to copy in the model .mdl file.
+
+        """
+        # force removal of conflicting cellrange names
+        self.force = force
+
         elements = {
             'row': [np.array([self.ref_row, self.ref_row], dtype=int)],
             'col': [np.array([self.ref_col, self.ref_col], dtype=int)],
@@ -694,7 +949,7 @@ class Constants(ExternalVariable):
                 cellname += '*'
             vensim_eq = f"""
             {self.var_name}[{', '.join(map(str, subs))}]=
-            \tGET_DIRECT_CONSTANTS('{file}', '{sheet}', '{cellname}') ~~|"""
+            \tGET_{loading}_CONSTANTS('{file}', '{sheet}', '{cellname}') ~~|"""
 
             vensim_eqs += vensim_eq
 
@@ -703,7 +958,8 @@ class Constants(ExternalVariable):
                      + f'\n\t~\t{self.units}'\
                      + f'\n\t~\t{self.description}'\
                      + '\n\t|'
-        print(vensim_eqs)
+
+        return vensim_eqs
 
 
 def load_from_json(json_file):
@@ -729,7 +985,7 @@ def load_from_json(json_file):
             # add dimensions
             for dimension, along in info['dimensions'].items():
                 obj.add_dimension(dimension, *along)
-            obj.get_vensim()
+            return obj.get_vensim()
 
         elif info['type'].lower() == 'lookups':
             # create object
@@ -739,7 +995,7 @@ def load_from_json(json_file):
                 obj.add_dimension(dimension, *along)
             # add x series
             obj.add_x(**info['x'])
-            obj.get_vensim()
+            return obj.get_vensim()
 
         elif info['type'].lower() == 'data':
             # create object
@@ -749,4 +1005,8 @@ def load_from_json(json_file):
                 obj.add_dimension(dimension, *along)
             # add time series
             obj.add_time(**info['time'])
-            obj.get_vensim()
+            return obj.get_vensim()
+        else:
+            raise ValueError(
+                f"\n Invalid type of variable {info['type']}. Tt must be"
+                " 'constants', 'lookups' or 'data'.")
