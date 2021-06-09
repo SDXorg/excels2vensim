@@ -1,6 +1,6 @@
 .~*#
 htmlcov
-new_files
+tmp_dir
 .coverage
 .ipynb_checkpoints
 excels2vensim.egg-info/

@@ -1,110 +1,37 @@
-import os
+"""
+Functions for parsing the subscript from a .mdl file using PySD.
+"""
+import warnings
 import re
 import textwrap
 import string
 import json
 
 import numpy as np
-import openpyxl
+from openpyxl.workbook.defined_name import DefinedName
 
-from .subscript_parser import get_subscripts
+from .utils.excels import Excels
+from .utils.subscripts import Subscripts
 
-class Subscripts():
-    """
-    Class to save the subscript dictionary.
-    """
-    _subscript_dict = {}
-
-    @classmethod
-    def read(cls, file):
-        """
-        Read the subscripts form a .mdl or .json file.
-        """
-        file_ini, file_extension = os.path.splitext(file)
-        if file_extension.lower() == ".mdl":
-            cls._subscript_dict = get_subscripts(
-                file, file_ini + '_subscripts.json')
-        elif file_extension.lower() == ".json":
-            cls._subscript_dict = json.load(open(file))
-        else:
-            pass
-
-    @classmethod
-    def get(cls, key):
-        """
-        Get the value of key of _subscript_dict.
-        """
-        return cls._subscript_dict[key]
-
-    @classmethod
-    def get_ranges(cls):
-        """
-        Get the list of keys of _subscript_dict.
-        """
-        return list(cls._subscript_dict)
-
-    @classmethod
-    def set(cls, dict):
-        """
-        Set _subscript_dict to input value.
-        """
-        cls.clean()
-        cls.update(dict)
-
-    @classmethod
-    def update(cls, dict):
-        """
-        Update _subscript_dict
-        """
-        cls._subscript_dict.update(dict)
-
-    @classmethod
-    def clean(cls):
-        """
-        Cleans the subscript dict
-        """
-        cls._subscript_dict = {}
-
-class Excels():
-    """
-    Class to save the read Excel files and thus avoid double reading
-    """
-    _Excels = {}
-
-    @classmethod
-    def read(cls, file):
-        """
-        Read the Excel file using OpenPyXL or return the previously read one
-        """
-        if file in cls._Excels:
-            return cls._Excels[file]
-        else:
-            excel = openpyxl.load_workbook(file)
-            cls._Excels[file] = excel
-            return excel
-
-    @classmethod
-    def save_and_close(cls):
-        """
-        Saves and closes the Excel files
-        """
-        for file, wb in cls._Excels.items():
-            wb.save(file)
-            wb.close()
-
-        cls._Excels = {}
 
 class ExternalVariable(object):
     def __init__(self, var_name, dims, cell, description, units, file, sheet):
-        self.var_name = var_name
-        self.description = description
-        self.units = units
-        self.dims = dims
+        self.var_name = var_name.strip()
+        self.base_name = self._clean_identifier(self.var_name )
+        if self.base_name != self.var_name:
+            warnings.warn(
+                f"The name of the variable '{self.var_name}' has special "
+                + f"characters. '{self.base_name}' will be used for "
+                + "cellrange names.")
+        self.description = description.strip()
+        self.units = units.strip()
+        self.dims = [dim.strip() for dim in dims]
         self.file = file
         self.sheet = sheet
         self.dims_dict = {}
         self.cell = cell
         self.ref_row, self.ref_col = self._split_excel_cell(cell)
+        self.subscripts_warns = set()
 
     def add_dimension(self, dim_name, read_along, sep=1):
         """
@@ -131,12 +58,16 @@ class ExternalVariable(object):
         None
 
         """
-        if dim_name not in Subscripts.get_ranges():
+        if dim_name.strip() not in Subscripts.get_ranges():
             raise ValueError(
-                f'\n{dim_name} is not in the list of subscript ranges:\n\t'
+                f"\n'{dim_name}' is not in the list of subscript ranges:\n\t"
                 + str(Subscripts.get_ranges()))
+        elif read_along not in ['col', 'row', 'sheet', 'file']:
+            raise ValueError(
+                "\nread_along must be 'row', 'col', 'sheet' or 'file'."
+            )
 
-        self.dims_dict[dim_name] = (read_along, sep)
+        self.dims_dict[dim_name.strip()] = (read_along, sep)
 
     def add_series(self, name, cell, read_along, length):
         """
@@ -161,11 +92,19 @@ class ExternalVariable(object):
         None
 
         """
+        cname = self._clean_identifier(name)
+        if name.strip() != cname:
+            warnings.warn(
+                f"The name of the interpolation dimension '{name.strip()}'"
+                f" has special characters. '{cname}' will be used for "
+                + "cellrange names.")
+
         self.series = {
-            'name': name,
+            'name': cname,
             'cell': cell,
             'read_along': read_along,
             'length': length}
+
 
         ref_row, ref_col = self._split_excel_cell(cell)
         if read_along == 'row':
@@ -184,7 +123,7 @@ class ExternalVariable(object):
             self._num_to_col(cols[0]), rows[0] + 1 ,
             self._num_to_col(cols[1]), rows[1] + 1)
 
-    def update_series_cellranges(self, sheets, files):
+    def _update_series_cellranges(self, sheets, files):
         """
         Add sheets to the cell ranges of the series
 
@@ -213,7 +152,10 @@ class ExternalVariable(object):
             sheet
             for sheet in sheets for file in files]
 
-    def build_boxes(self, elements, visited):
+        self.series['name'] =\
+             [self.series['name']] * len(self.series['cellrange'])
+
+    def _build_boxes(self, elements, visited):
         """
         Using the information of the dims_dict, builds the cellrange
         boxes.
@@ -239,7 +181,7 @@ class ExternalVariable(object):
             read_along, step = self.dims_dict[dim]
             if step == 1:
                 # append only subscript range name
-                self.add_info(elements, [dim],
+                self._add_info(elements, [dim],
                               read_along,
                               len(Subscripts.get(dim))-1)
 
@@ -247,17 +189,21 @@ class ExternalVariable(object):
 
             elif isinstance(step, int):
                 # append list of subscripts in subscript range
-                self.add_info(elements, Subscripts.get(dim),
+                self._add_info(elements, Subscripts.get(dim),
                               read_along,
                               range(0, step*len(Subscripts.get(dim)), step))
                 # steps: [0, step, 2*step, ..., (n_subs-1)*step]
             else:
                 # read along file of sheet
                 # append list of subscripts in subscript range
-                self.add_info(elements, Subscripts.get(dim),
+                self._add_info(elements, Subscripts.get(dim),
                               read_along,
                               step)
                 visited.append(read_along)
+
+        # raise warnings only once per dimension
+        for swarn in self.subscripts_warns:
+            warnings.warn(swarn)
 
         for dim in ['col', 'row']:
             if visited.count(dim) > 1:
@@ -278,16 +224,6 @@ class ExternalVariable(object):
                 raise ValueError(
                     f"\nTwo or more dimensions are defined along {dim}.")
 
-        # dictionary to manage cellrange names
-        if len(elements['sheet']) * len(elements['file'])\
-          / len(set(elements['sheet'])) * len(set(elements['file'])) != 1:
-          # elements are repeated in the same sheet of the same file
-          # need to add numbers to the end of the cellrange name
-            added = {file: {sheet: 0 for sheet in set(elements['sheet'])}
-                     for file in set(elements['file'])}
-        else:
-            added = None
-
         # convert cols to alpha
         elements['col'] = [[self._num_to_col(col) for col in element]
                            for element in elements['col']]
@@ -303,10 +239,9 @@ class ExternalVariable(object):
             zip(elements['sheet'], elements['col'], elements['row'])
         ]
 
-        return visited, added
+        return visited
 
-    @staticmethod
-    def add_info(elements, subs, read_along, steps=None):
+    def _add_info(self, elements, subs, read_along, steps=None):
         """
         Combine several list with elements of a given list
 
@@ -360,43 +295,50 @@ class ExternalVariable(object):
             elements[along] = list_out
 
         list_out = []
+        names_out = []
         if read_along in ['col', 'row']:
             # udpate cols or rows to read
             for current_coord in elements[read_along]:
                 for step in steps:
                     list_out.append(current_coord + step)
             elements[read_along] = list_out
+            for current_name in elements['cellname']:
+                for sub in subs:
+                    subc = self._clean_identifier(sub)
+                    if subc != sub.strip():
+                        self.subscripts_warns.add(
+                             f"The name of the subscript '{sub.strip()}'"
+                             + f" has special characters. '{subc}' will be"
+                             + " used for cellrange names.")
+                    names_out.append(current_name + '_' + subc)
+            elements['cellname'] = names_out
         else:
             # update file or sheet to read
-            for current_coord in elements[read_along]:
+            for (current_name, current_coord) in zip(elements['cellname'],
+                                                     elements[read_along]):
                 for step in steps:
                     list_out.append(step)
+                    names_out.append(current_name)
             elements[read_along] = list_out
+            elements['cellname'] = names_out
 
-    def write_cellranges(self, base_name, files, sheets, cellranges,
-                         added=None):
+    def _write_cellranges(self, names, files, sheets, cellranges):
         """
         Loop for writting several cellranges in excel file.
 
         Parameters
         ----------
-        base_name: str
-            The base name of the cellrange. If added is provided, a
-            number will be append to the name. Otherwise, the base name
-            will be used for the cellrange.
+        names: list
+            List of names of cellranges.
 
         files: list
             List of files to write each cellrange in.
 
         sheets: list
-            List of files to write each cellrange in.
+            List of sheets to write each cellrange in.
 
         cellranges: list
             List of cellranges to write.
-
-        added: dict or None (optional)
-            If dict it will be used to add number for the cellranges to
-            avoid repeating them.
 
         Returns
         -------
@@ -405,22 +347,18 @@ class ExternalVariable(object):
 
         """
         written_names = []
-        for file, sheet, cellrange in zip(files,
-                                          sheets,
-                                          cellranges):
-            if added:
-                added[file][sheet] += 1
-                name = f'{base_name}_{added[file][sheet]}'
-            else:
-                name = base_name
+        for name, file, sheet, cellrange in zip(names,
+                                                files,
+                                                sheets,
+                                                cellranges):
 
-            self.write_cellrange(name, file, sheet, cellrange, self.force)
+            self._write_cellrange(name, file, sheet, cellrange, self.force)
             written_names.append(name)
 
         return written_names
 
     @staticmethod
-    def write_cellrange(name, file, sheet, cellrange, force):
+    def _write_cellrange(name, file, sheet, cellrange, force):
         """
         Writes cellranges using openpyxl
 
@@ -456,12 +394,12 @@ class ExternalVariable(object):
                 wb.defined_names.delete(name, sheetId)
             else:
                 raise ValueError(
-                    f"\nTrying to write a cellrange with name {name} at "
-                    + f"{cellrange}. However, {name} already exist in "
-                    + f"{wb.defined_names.get(name, sheetId).attr_text}\n"
+                    f"\nTrying to write a cellrange with name '{name}' at "
+                    + f"'{cellrange}'. However, '{name}' already exist in "
+                    + f"'{wb.defined_names.get(name, sheetId).attr_text}'\n"
                     + "Use force=True to overwrite it.")
 
-        new_range = openpyxl.workbook.defined_name.DefinedName(
+        new_range = DefinedName(
             name, attr_text=cellrange, localSheetId=sheetId)
         wb.defined_names.append(new_range)
 
@@ -525,7 +463,8 @@ class ExternalVariable(object):
             chars.append(string.ascii_uppercase[d-1])
         return ''.join(reversed(chars))
 
-    def _split_excel_cell(self, cell):
+    @classmethod
+    def _split_excel_cell(cls, cell):
         """
         Splits a cell value given in a string.
         Returns None for non-valid cell formats.
@@ -553,9 +492,27 @@ class ExternalVariable(object):
             assert int(split[1]) != 0
             # the column name has as maximum 3 letters
             assert len(split[0]) <= 3
-            return int(split[1])-1, self._col_to_num(split[0])
+            return int(split[1])-1, cls._col_to_num(split[0])
         except AssertionError:
             return
+
+    @staticmethod
+    def _clean_identifier(string):
+        """
+        Remove invalid characters and spaces from a string.
+
+        Parameters
+        ----------
+        string: str
+            Original string.
+
+        Returns
+        -------
+        str
+            Clean string.
+        """
+        return re.sub('[^A-Za-z0-9]+', '_', string).strip('_')
+
 
 class Lookups(ExternalVariable):
     """
@@ -652,27 +609,26 @@ class Lookups(ExternalVariable):
             'col': [np.array([self.ref_col, self.ref_col], dtype=int)],
             'subs': [[]],
             'sheet': [[]],
-            'file': [[]]
+            'file': [[]],
+            'cellname': [self.base_name]
         }
 
         elements[self.series['read_along']][0][1] += self.series['length'] - 1
 
-        _, added = super().build_boxes(elements, [self.series['read_along']])
+        super()._build_boxes(elements, [self.series['read_along']])
 
-        super().update_series_cellranges(set(elements['sheet']),
+        super()._update_series_cellranges(set(elements['sheet']),
                                          set(elements['file']))
 
         # write series cellranges
-        super().write_cellranges(
+        super()._write_cellranges(
             self.series['name'], self.series['file'],
-            self.series['sheet'], self.series['cellrange'],
-            None)
+            self.series['sheet'], self.series['cellrange'])
 
         # write data cellranges
-        elements['cellname'] = super().write_cellranges(
-            self.var_name, elements['file'],
-            elements['sheet'], elements['cellrange'],
-            added)
+        super()._write_cellranges(
+            elements['cellname'], elements['file'],
+            elements['sheet'], elements['cellrange'])
 
         # save changes and close Excel files
         Excels.save_and_close()
@@ -685,7 +641,7 @@ class Lookups(ExternalVariable):
                                                elements['cellname']):
             vensim_eq = f"""
             {self.var_name}[{', '.join(map(str, subs))}]=
-            \tGET_{loading}_LOOKUPS('{file}', '{sheet}', '{self.series['name']}', '{cellname}') ~~|"""
+            \tGET_{loading}_LOOKUPS('{file}', '{sheet}', '{self.series['name'][0]}', '{cellname}') ~~|"""
 
             vensim_eqs += vensim_eq
 
@@ -743,7 +699,17 @@ class Data(ExternalVariable):
 
         """
         super().__init__(var_name, dims, cell, description, units, file, sheet)
-        self.interp = interp
+
+        if interp:
+            # conver interp to vensim notation
+            self.interp = interp.strip().upper().replace('_', ' ')
+            if self.interp not in ['INTERPOLATE', 'RAW',
+                                   'HOLD BACKWARD', 'LOOK FORWARD']:
+                raise ValueError(
+                    "\ninterp must be 'interpolate', 'raw', "
+                    "'hold backward' or 'look forward'")
+        else:
+            self.interp = None
 
     def add_time(self, name, cell, read_along, length):
         """
@@ -800,27 +766,26 @@ class Data(ExternalVariable):
             'col': [np.array([self.ref_col, self.ref_col], dtype=int)],
             'subs': [[]],
             'sheet': [[]],
-            'file': [[]]
+            'file': [[]],
+            'cellname': [self.base_name]
         }
 
         elements[self.series['read_along']][0][1] += self.series['length'] - 1
 
-        _, added = super().build_boxes(elements, [self.series['read_along']])
+        super()._build_boxes(elements, [self.series['read_along']])
 
-        super().update_series_cellranges(set(elements['sheet']),
+        super()._update_series_cellranges(set(elements['sheet']),
                                          set(elements['file']))
 
         # write series cellranges
-        super().write_cellranges(
+        super()._write_cellranges(
             self.series['name'], self.series['file'],
-            self.series['sheet'], self.series['cellrange'],
-            None)
+            self.series['sheet'], self.series['cellrange'])
 
         # write data cellranges
-        elements['cellname'] = super().write_cellranges(
-            self.var_name, elements['file'],
-            elements['sheet'], elements['cellrange'],
-            added)
+        super()._write_cellranges(
+            elements['cellname'], elements['file'],
+            elements['sheet'], elements['cellrange'])
 
         # save changes and close Excel files
         Excels.save_and_close()
@@ -835,11 +800,11 @@ class Data(ExternalVariable):
             {self.var_name}[{', '.join(map(str, subs))}]"""
             if self.interp:
                 # add keyword for interpolation method
-                vensim_eq += f":{self.interp.upper()}::="
+                vensim_eq += f":{self.interp}::="
             else:
                 vensim_eq += ":="
             vensim_eq += f"""
-            \tGET_{loading}_DATA('{file}', '{sheet}', '{self.series['name']}', '{cellname}') ~~|"""
+            \tGET_{loading}_DATA('{file}', '{sheet}', '{self.series['name'][0]}', '{cellname}') ~~|"""
 
             vensim_eqs += vensim_eq
 
@@ -922,19 +887,20 @@ class Constants(ExternalVariable):
             'col': [np.array([self.ref_col, self.ref_col], dtype=int)],
             'subs': [[]],
             'sheet': [[]],
-            'file': [[]]
+            'file': [[]],
+            'cellname': [self.base_name]
         }
-        visited, added = self.build_boxes(elements, [])
+
+        visited = self._build_boxes(elements, [])
 
         # transpose with *
         if visited in [["row"], ["col", "row"]]:
             self.transpose = True
 
         # write data cellranges
-        elements['cellname'] = super().write_cellranges(
-            self.var_name, elements['file'],
-            elements['sheet'], elements['cellrange'],
-            added)
+        super()._write_cellranges(
+            elements['cellname'], elements['file'],
+            elements['sheet'], elements['cellrange'])
 
         # save changes and close Excel files
         Excels.save_and_close()
@@ -976,7 +942,8 @@ def load_from_json(json_file):
     None
 
     """
-    vars_dict = json.load(open(json_file))
+    with open(json_file) as file:
+        vars_dict = json.load(file)
 
     for var, info in vars_dict.items():
         if info['type'].lower() == 'constants':
@@ -1008,5 +975,5 @@ def load_from_json(json_file):
             return obj.get_vensim()
         else:
             raise ValueError(
-                f"\n Invalid type of variable {info['type']}. Tt must be"
-                " 'constants', 'lookups' or 'data'.")
+                f"\n Invalid type of variable '{info['type']}'. It must be"
+                + " 'constants', 'lookups' or 'data'.")

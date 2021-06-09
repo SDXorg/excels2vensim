@@ -1,0 +1,50 @@
+{UTF-8}
+out:
+	Elec, Heat, Solid, Liquid
+	~
+	~		|
+
+region:
+	Region1, Region2, Region3, Region4
+	~
+	~		|
+
+sector:
+	A, B, C, D
+	~
+	~		|
+
+source:
+	Gas, Oil, Coal
+	~
+	~		|
+
+
+
+********************************************************
+	.Control
+********************************************************~
+		Simulation Control Parameters
+	|
+
+FINAL TIME  = 10
+	~	Month
+	~	The final time for the simulation.
+	|
+
+INITIAL TIME  = 0
+	~	Month
+	~	The initial time for the simulation.
+	|
+
+SAVEPER  =
+        TIME STEP
+	~	Month [0,?]
+	~	The frequency with which output is stored.
+	|
+
+TIME STEP  = 1
+	~	Month [0,?]
+	~	The time step for the simulation.
+	|
+

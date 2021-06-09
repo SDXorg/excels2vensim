@@ -2,8 +2,8 @@
 "population": {
     "type": "lookups",
     "dims": ["GENDER", "AGE COHORT", "REGIONS"],
-    "cell": "E5",
-    "file": "new_files/inputs_data2.xlsx",
+    "cell": "D5",
+    "file": "tmp_dir/inputs_data2.xlsx",
     "description": "Total population per gender, age and region.",
     "units": "People",
     "dimensions": {
@@ -16,7 +16,7 @@
         },
     "x": {
         "name": "time",
-        "cell": "E4",
+        "cell": "D4",
         "read_along": "col",
         "length": 16
         }
