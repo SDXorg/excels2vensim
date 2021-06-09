@@ -1,5 +1,5 @@
 {"share_energy": {
-    "type": "Constants",
+    "type": "NonValid",
     "dims": ["source", "sector", "region", "out"],
     "cell": "C4",
     "file": "tmp_dir/inputs.xlsx",

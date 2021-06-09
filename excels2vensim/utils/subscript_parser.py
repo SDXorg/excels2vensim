@@ -1,3 +1,6 @@
+"""
+Functions for parsing the subscript from a .mdl file using PySD.
+"""
 import os
 import warnings
 import json
@@ -84,10 +87,6 @@ def _translate_section(section, root_path):
     -------
     subscript_dict: dict
         Dictionary of the subscripts.
-
-    Examples
-    --------
-    >>> translate_vensim('my_model.mdl')
 
     """
     model_elements = pysd_v2py.get_model_elements(section['string'])

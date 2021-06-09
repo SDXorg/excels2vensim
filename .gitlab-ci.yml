@@ -9,7 +9,7 @@ tests:
   script:
     - python3 -m pip install pytest pytest-cov coverage
     - cd tests
-    - pytest --cov=excels2vensim *.py
+    - pytest --basetemp=tmp_dir --cov=excels2vensim *.py
     - coverage xml
   artifacts:
     reports:

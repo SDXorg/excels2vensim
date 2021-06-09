@@ -15,22 +15,22 @@ clean:
 
 tests: clean
         ifeq ($(NUM_PROC), 1)
-		pytest *.py
+		pytest --basetemp=tmp_dir *.py
         else
-		pytest *.py -n $(NUM_PROC)
+		pytest --basetemp=tmp_dir *.py -n $(NUM_PROC)
 endif
 
 cover: clean
         ifeq ($(NUM_PROC), 1)
-		pytest --cov=excels2vensim --cov-report term *.py
+		pytest --basetemp=tmp_dir --cov=excels2vensim --cov-report term *.py
         else
-		pytest --cov=excels2vensim --cov-report term *.py -n $(NUM_PROC)
+		pytest --basetemp=tmp_dir --cov=excels2vensim --cov-report term *.py -n $(NUM_PROC)
 endif
 
 coverhtml: clean
         ifeq ($(NUM_PROC), 1)
-		pytest --cov=excels2vensim --cov-report html --cov-report term *.py
+		pytest --basetemp=tmp_dir --cov=excels2vensim --cov-report html --cov-report term *.py
         else
-		pytest --cov=excels2vensim --cov-report html --cov-report term *.py -n $(NUM_PROC)
+		pytest --basetemp=tmp_dir --cov=excels2vensim --cov-report html --cov-report term *.py -n $(NUM_PROC)
 endif
 
