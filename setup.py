@@ -27,8 +27,6 @@ setup(
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     ],
-    install_requires=[
-        'pysd'
-    ],
+    install_requires=open('requirements.txt').read().strip().split('\n'),
     include_package_data=True
 )

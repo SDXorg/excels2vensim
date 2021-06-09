@@ -14,3 +14,11 @@ tests:
   artifacts:
     reports:
       cobertura: tests/coverage.xml
+
+docs:
+  stage: test
+  script:
+    - python3 -m pip install sphinx sphinx_rtd_theme mock
+    - cd docs
+    - make html
+
