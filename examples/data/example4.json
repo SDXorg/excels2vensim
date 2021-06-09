@@ -2,8 +2,8 @@
 "population": {
     "type": "DATA",
     "dims": ["AGE COHORT", "REGIONS", "GENDER"],
-    "cell": "D5",
-    "file": "new_files/inputs_data_j.xlsx",
+    "cell": "E5",
+    "file": "data/inputs_data.xlsx",
     "sheet": "GPH",
     "description": "Total population per age, region and gender.",
     "units": "People",
@@ -13,32 +13,10 @@
         "AGE COHORT": ["row", 1]
         },
     "time": {
-        "name": "time",
-        "cell": "D4",
+        "name": "year",
+        "cell": "E4",
         "read_along": "col",
         "length": 16
         }
-    },
-"population2": {
-        "type": "lookups",
-        "dims": ["GENDER", "AGE COHORT", "REGIONS"],
-        "cell": "E5",
-        "file": "new_files/inputs_dat2_j.xlsx",
-        "description": "Total population per gender, age and region.",
-        "units": "People",
-        "dimensions": {
-            "REGIONS": ["sheet", [
-                "EU27", "UK", "CNHK", "EASTOC", "IND",
-                "LATAM", "RUS", "USMCA", "LROW"
-                ]],
-            "GENDER": ["row", 17],
-            "AGE COHORT": ["row", 1]
-            },
-        "time": {
-            "name": "time",
-            "cell": "E4",
-            "read_along": "col",
-            "length": 16
-            }
-        }
+    }
 }
