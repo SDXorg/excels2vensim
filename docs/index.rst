@@ -6,7 +6,7 @@
 Welcome excels2vensim library documentation!
 ============================================
 
-Easy generaty Vensim GET XLS/DIRECT equations with cellrange names.
+Easy generate Vensim GET XLS/DIRECT equations with cellrange names.
 
 |made-with-sphinx-doc|
 |docs|

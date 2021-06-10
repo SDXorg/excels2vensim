@@ -22,3 +22,11 @@ docs:
     - cd docs
     - make html
 
+pypi:
+  stage: deploy
+  only:
+    - tags
+  script:
+    - python3 -m pip install setuptools wheel twine
+    - python3 setup.py sdist bdist_wheel
+    - TWINE_USERNAME=__token__ TWINE_PASSWORD=$PYPI_TOKEN python3 -m twine upload --verbose dist/*
