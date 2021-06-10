@@ -7,3 +7,4 @@ excels2vensim.egg-info/
 __pycache__
 examples/data/inputs_*.xlsx
 examples/*.json
+docs/_build

@@ -42,12 +42,30 @@ Easy generaty Vensim GET XLS/DIRECT equations with cellrange names.
    :target: https://gitlab.com/eneko.martin.martinez/excels2vensim/
 
 
-[Under development...]
+Systems Dynamics models often use large amounts of input data. Reading this data is complicated when it corresponds to multidimensional matrices. In the case of Vensim, if the data is read from '.xlsx' files, the data can only be read in two-dimensional tables at most, which implies the introduction of multiple equations in the model file.
+
+The excels2vensim library aims to simplify the incorporation of equations from external data into Vensim. Given the name of the variable and information on how its dimensions are distributed, the library returns the equations for copying and pasting into the Vensim model. In addition, the library uses cellrange names to write the equations, and automatically creates the cellranges in the '.xlsx' file.
+
+The automation of this process can save a lot of time for the modeller, as well as reduce possible human error by avoiding entering a large number of equations by hand. The library is also flexible and works for any number of dimensions. In addition, it allows reading data of which one dimension is spread over different files or sheets.
+
+This library is able to automate the generation of the following type of equations:
+
+#. GET XLS CONSTANTS
+#. GET DIRECT CONSTANTS
+#. GET XLS DATA (with or without keywords)
+#. GET DIRECT DATA (with or without keywords)
+#. GET XLS LOOKUPS
+#. GET DIRECT LOOKUPS
 
 The `original code for excels2vensim is available at GitLab <https://gitlab.com/eneko.martin.martinez/excels2vensim>`_. If you find a bug, or are interested in a particular feature, please use the `issue tracker from GitLab <https://gitlab.com/eneko.martin.martinez/excels2vensim/-/issues>`_. For contributions see :doc:`development <development>`.
 
-Contents:
----------
+Requirements
+------------
+* Python 3.7+
+* PySD 1.4+
+
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2
@@ -56,7 +74,11 @@ Contents:
    usage
    development
 
-
+Additional Resources
+--------------------
+Examples
+^^^^^^^^
+Some jupyter notebook examples are available in the `examples folder of the GitLab repository <https://gitlab.com/eneko.martin.martinez/excels2vensim/-/tree/master/examples>`_.
 
 Acknowledgmentes
 ----------------
