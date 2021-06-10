@@ -241,8 +241,8 @@ def test_load_from_json():
     tests_excels2vensim.py
     """
 
-    expected = "\n Invalid type of variable 'NonValid'. It must be"\
-               + " 'constants', 'lookups' or 'data'."
+    expected = "\n Invalid type of variable 'NonValid' for 'share_energy'."\
+               + " It must be 'constants', 'lookups' or 'data'."
     # invalid var name
     with pytest.raises(ValueError, match=expected):
         e2v.load_from_json('jsons/non_valid.json')

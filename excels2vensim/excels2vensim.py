@@ -945,6 +945,8 @@ def load_from_json(json_file):
     with open(json_file) as file:
         vars_dict = json.load(file)
 
+    eqs = []
+
     for var, info in vars_dict.items():
         if info['type'].lower() == 'constants':
             # create object
@@ -952,7 +954,7 @@ def load_from_json(json_file):
             # add dimensions
             for dimension, along in info['dimensions'].items():
                 obj.add_dimension(dimension, *along)
-            return obj.get_vensim()
+            eqs.append(obj.get_vensim())
 
         elif info['type'].lower() == 'lookups':
             # create object
@@ -962,7 +964,7 @@ def load_from_json(json_file):
                 obj.add_dimension(dimension, *along)
             # add x series
             obj.add_x(**info['x'])
-            return obj.get_vensim()
+            eqs.append(obj.get_vensim())
 
         elif info['type'].lower() == 'data':
             # create object
@@ -972,8 +974,10 @@ def load_from_json(json_file):
                 obj.add_dimension(dimension, *along)
             # add time series
             obj.add_time(**info['time'])
-            return obj.get_vensim()
+            eqs.append(obj.get_vensim())
         else:
             raise ValueError(
-                f"\n Invalid type of variable '{info['type']}'. It must be"
-                + " 'constants', 'lookups' or 'data'.")
+                f"\n Invalid type of variable '{info['type']}' for '{var}'."
+                + " It must be 'constants', 'lookups' or 'data'.")
+
+    return '\n'.join(eqs)

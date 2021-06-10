@@ -5,3 +5,5 @@ tmp_dir
 .ipynb_checkpoints
 excels2vensim.egg-info/
 __pycache__
+examples/data/inputs_*.xlsx
+examples/*.json
