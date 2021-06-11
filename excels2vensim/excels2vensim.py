@@ -155,16 +155,13 @@ class ExternalVariable(object):
         self.series['name'] =\
              [self.series['name']] * len(self.series['cellrange'])
 
-    def _build_boxes(self, elements, visited):
+    def _build_boxes(self, visited):
         """
         Using the information of the dims_dict, builds the cellrange
         boxes.
 
         Parameters
         ----------
-        elements: dict
-            Dictionary to save the information of the object. This
-            object will be mutated by this function.
         visited: list
             List of the visited read_along elements with sep=1. It is
             used for specify the dimension of the series in DATA and LOOKUPS.
@@ -181,24 +178,24 @@ class ExternalVariable(object):
             read_along, step = self.dims_dict[dim]
             if step == 1:
                 # append only subscript range name
-                self._add_info(elements, [dim],
-                              read_along,
-                              len(Subscripts.get(dim))-1)
+                self._add_info([dim],
+                               read_along,
+                               len(Subscripts.get(dim))-1)
 
                 visited.append(read_along)
 
             elif isinstance(step, int):
                 # append list of subscripts in subscript range
-                self._add_info(elements, Subscripts.get(dim),
-                              read_along,
-                              range(0, step*len(Subscripts.get(dim)), step))
+                self._add_info(Subscripts.get(dim),
+                               read_along,
+                               range(0, step*len(Subscripts.get(dim)), step))
                 # steps: [0, step, 2*step, ..., (n_subs-1)*step]
             else:
                 # read along file of sheet
                 # append list of subscripts in subscript range
-                self._add_info(elements, Subscripts.get(dim),
-                              read_along,
-                              step)
+                self._add_info(Subscripts.get(dim),
+                               read_along,
+                               step)
                 visited.append(read_along)
 
         # raise warnings only once per dimension
@@ -214,7 +211,8 @@ class ExternalVariable(object):
         for dim in ['file', 'sheet']:
             if visited.count(dim) == 0:
                 # no dimension defined along sheet or file
-                elements[dim] = [getattr(self, dim)] * len(elements[dim])
+                self.elements[dim] =\
+                    [getattr(self, dim)] * len(self.elements[dim])
             elif visited.count(dim) == 1:
                 # 1 dimension defined along sheet or file, remove it from
                 # dim for transpositions in CONSTANTS
@@ -225,31 +223,29 @@ class ExternalVariable(object):
                     f"\nTwo or more dimensions are defined along {dim}.")
 
         # convert cols to alpha
-        elements['col'] = [[self._num_to_col(col) for col in element]
-                           for element in elements['col']]
+        self.elements['col'] = [[self._num_to_col(col) for col in element]
+                           for element in self.elements['col']]
 
         # convert rows to excel numbering
-        elements['row'] = [[row+1 for row in element]
-                           for element in elements['row']]
+        self.elements['row'] = [[row+1 for row in element]
+                           for element in self.elements['row']]
 
         # writting information
-        elements['cellrange'] = [
+        self.elements['cellrange'] = [
             '%s!$%s$%s:$%s$%s' % (sheet, cols[0], rows[0], cols[1], rows[1])
             for sheet, cols, rows in\
-            zip(elements['sheet'], elements['col'], elements['row'])
+            zip(self.elements['sheet'],
+                self.elements['col'], self.elements['row'])
         ]
 
         return visited
 
-    def _add_info(self, elements, subs, read_along, steps=None):
+    def _add_info(self, subs, read_along, steps=None):
         """
         Combine several list with elements of a given list
 
         Parameters
         ----------
-        elements: dict
-            Dictionary with element information.
-
         subs: list
             List of current subscripts.
 
@@ -267,19 +263,19 @@ class ExternalVariable(object):
         """
         # add the subs
         list_out = []
-        for element1 in elements['subs']:
+        for element1 in self.elements['subs']:
             for element2 in subs:
                 list_out.append(element1 + [element2])
 
-        elements['subs'] = list_out
+        self.elements['subs'] = list_out
 
         # dimension gives the table shape
         if isinstance(steps, int):
             list_out = []
-            for current_coord in elements[read_along]:
+            for current_coord in self.elements[read_along]:
                 list_out.append(current_coord + np.array([0, steps]))
 
-            elements[read_along] = list_out
+            self.elements[read_along] = list_out
             return
 
         # duplicate the rows, cols, file and sheet values if not given
@@ -289,20 +285,20 @@ class ExternalVariable(object):
 
         for along in coords_to_duplicate:
             list_out = []
-            for current_coord in elements[along]:
+            for current_coord in self.elements[along]:
                 for step in steps:
                     list_out.append(current_coord)
-            elements[along] = list_out
+            self.elements[along] = list_out
 
         list_out = []
         names_out = []
         if read_along in ['col', 'row']:
             # udpate cols or rows to read
-            for current_coord in elements[read_along]:
+            for current_coord in self.elements[read_along]:
                 for step in steps:
                     list_out.append(current_coord + step)
-            elements[read_along] = list_out
-            for current_name in elements['cellname']:
+            self.elements[read_along] = list_out
+            for current_name in self.elements['cellname']:
                 for sub in subs:
                     subc = self._clean_identifier(sub)
                     if subc != sub.strip():
@@ -311,16 +307,16 @@ class ExternalVariable(object):
                              + f" has special characters. '{subc}' will be"
                              + " used for cellrange names.")
                     names_out.append(current_name + '_' + subc)
-            elements['cellname'] = names_out
+            self.elements['cellname'] = names_out
         else:
             # update file or sheet to read
-            for (current_name, current_coord) in zip(elements['cellname'],
-                                                     elements[read_along]):
+            for (current_name, current_coord) in zip(self.elements['cellname'],
+                                                     self.elements[read_along]):
                 for step in steps:
                     list_out.append(step)
                     names_out.append(current_name)
-            elements[read_along] = list_out
-            elements['cellname'] = names_out
+            self.elements[read_along] = list_out
+            self.elements['cellname'] = names_out
 
     def _write_cellranges(self, names, files, sheets, cellranges):
         """
@@ -579,9 +575,9 @@ class Lookups(ExternalVariable):
         """
         super().add_series(name, cell, read_along, length)
 
-    def get_vensim(self, force=False, loading='DIRECT'):
+    def execute(self, force=False, loading='DIRECT'):
         """
-        Get vensim ewuations and write cell range names in the Excel file.
+        Get vensim equations and write cell range names in the Excel file.
 
         Parameters
         ----------
@@ -604,21 +600,7 @@ class Lookups(ExternalVariable):
         # force removal of conflicting cellrange names
         self.force = force
 
-        elements = {
-            'row': [np.array([self.ref_row, self.ref_row], dtype=int)],
-            'col': [np.array([self.ref_col, self.ref_col], dtype=int)],
-            'subs': [[]],
-            'sheet': [[]],
-            'file': [[]],
-            'cellname': [self.base_name]
-        }
-
-        elements[self.series['read_along']][0][1] += self.series['length'] - 1
-
-        super()._build_boxes(elements, [self.series['read_along']])
-
-        super()._update_series_cellranges(set(elements['sheet']),
-                                         set(elements['file']))
+        vensim_eqs = self.get_vensim(loading)
 
         # write series cellranges
         super()._write_cellranges(
@@ -627,18 +609,62 @@ class Lookups(ExternalVariable):
 
         # write data cellranges
         super()._write_cellranges(
-            elements['cellname'], elements['file'],
-            elements['sheet'], elements['cellrange'])
+            self.elements['cellname'], self.elements['file'],
+            self.elements['sheet'], self.elements['cellrange'])
 
         # save changes and close Excel files
         Excels.save_and_close()
 
+        return vensim_eqs
+
+    def get_vensim(self, force=False, loading='DIRECT'):
+        """
+        Get vensim equations and write cell range names in the Excel file.
+
+        Parameters
+        ----------
+        force: bool (optional)
+            If True and trying and tryting to write a cell range name
+            that already exist in other positions it will overwrite it
+            (not recommended). If False it will return and error when
+            trying to write the new cellrange name. Default is False.
+
+        loading: str (optional)
+            Vensing GET loading type it can be 'DIRECT' or 'XLS'.
+            Default is 'DIRECT'.
+
+        Returns
+        -------
+        vensim_eqs: str
+            The string of Vensim equations to copy in the model .mdl file.
+
+        """
+        # force removal of conflicting cellrange names
+        self.force = force
+
+        self.elements = {
+            'row': [np.array([self.ref_row, self.ref_row], dtype=int)],
+            'col': [np.array([self.ref_col, self.ref_col], dtype=int)],
+            'subs': [[]],
+            'sheet': [[]],
+            'file': [[]],
+            'cellname': [self.base_name]
+        }
+
+        self.elements[self.series['read_along']][0][1] +=\
+            self.series['length'] - 1
+
+        super()._build_boxes([self.series['read_along']])
+
+        super()._update_series_cellranges(set(self.elements['sheet']),
+                                         set(self.elements['file']))
+
         # generate Vensim equations
         vensim_eqs = ""
-        for subs, file, sheet, cellname in zip(elements['subs'],
-                                               elements['file'],
-                                               elements['sheet'],
-                                               elements['cellname']):
+        for subs, file, sheet, cellname in zip(self.elements['subs'],
+                                               self.elements['file'],
+                                               self.elements['sheet'],
+                                               self.elements['cellname']):
             vensim_eq = f"""
             {self.var_name}[{', '.join(map(str, subs))}]=
             \tGET_{loading}_LOOKUPS('{file}', '{sheet}', '{self.series['name'][0]}', '{cellname}') ~~|"""
@@ -736,9 +762,9 @@ class Data(ExternalVariable):
         """
         super().add_series(name, cell, read_along, length)
 
-    def get_vensim(self, force=False, loading='DIRECT'):
+    def execute(self, force=False, loading='DIRECT'):
         """
-        Get vensim ewuations and write cell range names in the Excel file.
+        Get vensim equations and write cell range names in the Excel file.
 
         Parameters
         ----------
@@ -761,21 +787,7 @@ class Data(ExternalVariable):
         # force removal of conflicting cellrange names
         self.force = force
 
-        elements = {
-            'row': [np.array([self.ref_row, self.ref_row], dtype=int)],
-            'col': [np.array([self.ref_col, self.ref_col], dtype=int)],
-            'subs': [[]],
-            'sheet': [[]],
-            'file': [[]],
-            'cellname': [self.base_name]
-        }
-
-        elements[self.series['read_along']][0][1] += self.series['length'] - 1
-
-        super()._build_boxes(elements, [self.series['read_along']])
-
-        super()._update_series_cellranges(set(elements['sheet']),
-                                         set(elements['file']))
+        vensim_eqs = self.get_vensim(loading)
 
         # write series cellranges
         super()._write_cellranges(
@@ -784,18 +796,62 @@ class Data(ExternalVariable):
 
         # write data cellranges
         super()._write_cellranges(
-            elements['cellname'], elements['file'],
-            elements['sheet'], elements['cellrange'])
+            self.elements['cellname'], self.elements['file'],
+            self.elements['sheet'], self.elements['cellrange'])
 
         # save changes and close Excel files
         Excels.save_and_close()
 
+        return vensim_eqs
+
+    def get_vensim(self, force=False, loading='DIRECT'):
+        """
+        Get vensim equations and write cell range names in the Excel file.
+
+        Parameters
+        ----------
+        force: bool (optional)
+            If True and trying and tryting to write a cell range name
+            that already exist in other positions it will overwrite it
+            (not recommended). If False it will return and error when
+            trying to write the new cellrange name. Default is False.
+
+        loading: str (optional)
+            Vensing GET loading type it can be 'DIRECT' or 'XLS'.
+            Default is 'DIRECT'.
+
+        Returns
+        -------
+        vensim_eqs: str
+            The string of Vensim equations to copy in the model .mdl file.
+
+        """
+        # force removal of conflicting cellrange names
+        self.force = force
+
+        self.elements = {
+            'row': [np.array([self.ref_row, self.ref_row], dtype=int)],
+            'col': [np.array([self.ref_col, self.ref_col], dtype=int)],
+            'subs': [[]],
+            'sheet': [[]],
+            'file': [[]],
+            'cellname': [self.base_name]
+        }
+
+        self.elements[self.series['read_along']][0][1] +=\
+            self.series['length'] - 1
+
+        super()._build_boxes([self.series['read_along']])
+
+        super()._update_series_cellranges(set(self.elements['sheet']),
+                                         set(self.elements['file']))
+
         # generate Vensim equations
         vensim_eqs = ""
-        for subs, file, sheet, cellname in zip(elements['subs'],
-                                               elements['file'],
-                                               elements['sheet'],
-                                               elements['cellname']):
+        for subs, file, sheet, cellname in zip(self.elements['subs'],
+                                               self.elements['file'],
+                                               self.elements['sheet'],
+                                               self.elements['cellname']):
             vensim_eq = f"""
             {self.var_name}[{', '.join(map(str, subs))}]"""
             if self.interp:
@@ -857,9 +913,9 @@ class Constants(ExternalVariable):
         super().__init__(var_name, dims, cell, description, units, file, sheet)
         self.transpose = False
 
-    def get_vensim(self, force=False, loading='DIRECT'):
+    def execute(self, force=False, loading='DIRECT'):
         """
-        Get vensim ewuations and write cell range names in the Excel file.
+        Get vensim equations and write cell range names in the Excel file.
 
         Parameters
         ----------
@@ -882,7 +938,35 @@ class Constants(ExternalVariable):
         # force removal of conflicting cellrange names
         self.force = force
 
-        elements = {
+        vensim_eqs = self.get_vensim(loading)
+
+        # write data cellranges
+        super()._write_cellranges(
+            self.elements['cellname'], self.elements['file'],
+            self.elements['sheet'], self.elements['cellrange'])
+
+        # save changes and close Excel files
+        Excels.save_and_close()
+
+        return vensim_eqs
+
+    def get_vensim(self, loading='DIRECT'):
+        """
+        Get vensim equations.
+
+        Parameters
+        ----------
+        loading: str (optional)
+            Vensing GET loading type it can be 'DIRECT' or 'XLS'.
+            Default is 'DIRECT'.
+
+        Returns
+        -------
+        vensim_eqs: str
+            The string of Vensim equations to copy in the model .mdl file.
+
+        """
+        self.elements = {
             'row': [np.array([self.ref_row, self.ref_row], dtype=int)],
             'col': [np.array([self.ref_col, self.ref_col], dtype=int)],
             'subs': [[]],
@@ -891,26 +975,20 @@ class Constants(ExternalVariable):
             'cellname': [self.base_name]
         }
 
-        visited = self._build_boxes(elements, [])
+        visited = self._build_boxes([])
 
         # transpose with *
         if visited in [["row"], ["col", "row"]]:
             self.transpose = True
 
-        # write data cellranges
-        super()._write_cellranges(
-            elements['cellname'], elements['file'],
-            elements['sheet'], elements['cellrange'])
 
-        # save changes and close Excel files
-        Excels.save_and_close()
 
         # generate Vensim equations
         vensim_eqs = ""
-        for subs, file, sheet, cellname in zip(elements['subs'],
-                                               elements['file'],
-                                               elements['sheet'],
-                                               elements['cellname']):
+        for subs, file, sheet, cellname in zip(self.elements['subs'],
+                                               self.elements['file'],
+                                               self.elements['sheet'],
+                                               self.elements['cellname']):
             if self.transpose:
                 cellname += '*'
             vensim_eq = f"""
@@ -939,45 +1017,68 @@ def load_from_json(json_file):
 
     Returns
     -------
-    None
+    str
+        The equations to copy in the Vensim model file.
 
     """
     with open(json_file) as file:
         vars_dict = json.load(file)
 
+    return execute(vars_dict)
+
+
+def execute(vars_dict):
+    """
+    Run the features using a dictionary.
+
+    Prameters
+    ---------
+    vars_dict
+        Python dictionary with the needed information.
+
+    Returns
+    -------
+    str
+        The equations to copy in the Vensim model file.
+
+    """
     eqs = []
 
     for var, info in vars_dict.items():
+
         if info['type'].lower() == 'constants':
             # create object
             obj = Constants(var, **info)
-            # add dimensions
-            for dimension, along in info['dimensions'].items():
-                obj.add_dimension(dimension, *along)
-            eqs.append(obj.get_vensim())
 
         elif info['type'].lower() == 'lookups':
             # create object
             obj = Lookups(var, **info)
-            # add dimensions
-            for dimension, along in info['dimensions'].items():
-                obj.add_dimension(dimension, *along)
             # add x series
             obj.add_x(**info['x'])
-            eqs.append(obj.get_vensim())
 
         elif info['type'].lower() == 'data':
             # create object
             obj = Data(var, **info)
-            # add dimensions
-            for dimension, along in info['dimensions'].items():
-                obj.add_dimension(dimension, *along)
             # add time series
             obj.add_time(**info['time'])
-            eqs.append(obj.get_vensim())
+
         else:
             raise ValueError(
                 f"\n Invalid type of variable '{info['type']}' for '{var}'."
                 + " It must be 'constants', 'lookups' or 'data'.")
+
+        # add dimensions
+        for dimension, along in info['dimensions'].items():
+            obj.add_dimension(dimension, *along)
+
+        if hasattr(info, 'force'):
+            force = info['force']
+        else:
+            force = False
+        if hasattr(info, 'loading'):
+            loading = info['loading']
+        else:
+            loading = 'DIRECT'
+        eqs.append(obj.execute(force=force, loading=loading))
 
     return '\n'.join(eqs)

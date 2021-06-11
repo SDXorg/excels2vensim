@@ -1,0 +1,3 @@
+[run]
+omit =
+    ../excels2vensim/gui/*
