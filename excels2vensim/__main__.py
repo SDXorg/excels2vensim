@@ -2,7 +2,6 @@ import sys
 import getopt
 from .excels2vensim import load_from_json, Subscripts
 
-
 def get_user_input(args):
     """
     Get user input.
@@ -21,7 +20,7 @@ def get_user_input(args):
 
     try:
         opts, args = getopt.getopt(
-            args, "ho:",['help', 'output-file='])
+            args, "ho:", ['help', 'output-file=', 'gui'])
 
         for opt, arg in opts:
             if opt in ('-h', '--help'):
@@ -36,13 +35,18 @@ def get_user_input(args):
                     '-h, --help\t\t help menu \n'
                     '-o OUT_FILE, --output_file=OUT_FILE\t\t the output '
                     'file to save Vensim equations. If not given the '
-                    'vensim equation will be printed in the standard output.'
+                    'vensim equation will be printed in the standard output.\n'
+                    '--gui\t\t start the GUI.\n\n'
                       )
 
                 sys.exit()
 
             elif opt in ('-o', '--output-file'):
                 output = arg
+            elif opt == '--gui':
+                from .gui import start_gui
+                start_gui()
+                sys.exit()
             else:
                 pass
 
@@ -87,5 +91,10 @@ def main(subscript_file, json_files, output=None):
 
 
 if __name__ == "__main__":
-    subscript_file, json_files, output = get_user_input(sys.argv[1:])
-    main(subscript_file, json_files, output)
+    if len(sys.argv) == 1:
+        from .gui import start_gui
+        start_gui()
+    else:
+        subscript_file, json_files, output =\
+            get_user_input(sys.argv[1:])
+        main(subscript_file, json_files, output)

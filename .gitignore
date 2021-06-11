@@ -8,3 +8,5 @@ __pycache__
 examples/data/inputs_*.xlsx
 examples/*.json
 docs/_build
+build
+dist
