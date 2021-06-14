@@ -513,41 +513,40 @@ class ExternalVariable(object):
 class Lookups(ExternalVariable):
     """
     Class for creating GET DIRECT/XLS LOOKUPS equations and cellranges.
+
+    Parameters
+    ----------
+    var_name: str
+        The name of the variable in Vensim code and basestring for
+        cellrange names.
+
+    dims: list
+        List of the dimensions of the variable in the same order that
+        will be created the variable in the Vensim code.
+
+    cell: str
+        Reference cell of the data. First cellw with numeric values
+        (upper-left corner).
+
+    description: str (optional)
+        Description to include in the Vensim equations. By default no
+        description will be included.
+
+    units: str (optional)
+        Units to include in the Vensim equations. By default no
+        units will be included.
+
+    file: str (optional)
+        File where the data is. This argument is mandatory unless a
+        subscript range is defined across several files. Default is None.
+
+    sheet: str (optional)
+        Sheet where the data is. This argument is mandatory unless a
+        subscript range is defined across several sheets. Default is None.
+
     """
     def __init__(self, var_name, dims, cell, description='', units='',
                  file=None, sheet=None, **kwargs):
-        """
-        Parameters
-        ----------
-        var_name: str
-            The name of the variable in Vensim code and basestring for
-            cellrange names.
-
-        dims: list
-            List of the dimensions of the variable in the same order that
-            will be created the variable in the Vensim code.
-
-        cell: str
-            Reference cell of the data. First cellw with numeric values
-            (upper-left corner).
-
-        description: str (optional)
-            Description to include in the Vensim equations. By default no
-            description will be included.
-
-        units: str (optional)
-            Units to include in the Vensim equations. By default no
-            units will be included.
-
-        file: str (optional)
-            File where the data is. This argument is mandatory unless a
-            subscript range is defined across several files. Default is None.
-
-        sheet: str (optional)
-            Sheet where the data is. This argument is mandatory unless a
-            subscript range is defined across several sheets. Default is None.
-
-        """
         super().__init__(var_name, dims, cell, description, units, file, sheet)
 
     def add_x(self, name, cell, read_along, length):
@@ -682,48 +681,47 @@ class Lookups(ExternalVariable):
 class Data(ExternalVariable):
     """
     Class for creating GET DIRECT/XLS DATA equations and cellranges.
+
+    Parameters
+    ----------
+    var_name: str
+        The name of the variable in Vensim code and basestring for
+        cellrange names.
+
+    dims: list
+        List of the dimensions of the variable in the same order that
+        will be created the variable in the Vensim code.
+
+    cell: str
+        Reference cell of the data. First cellw with numeric values
+        (upper-left corner).
+
+    description: str (optional)
+        Description to include in the Vensim equations. By default no
+        description will be included.
+
+    units: str (optional)
+        Units to include in the Vensim equations. By default no
+        units will be included.
+
+    file: str (optional)
+        File where the data is. This argument is mandatory unless a
+        subscript range is defined across several files. Default is None.
+
+    sheet: str (optional)
+        Sheet where the data is. This argument is mandatory unless a
+        subscript range is defined across several sheets. Default is None.
+
+    interp: str or None (optional)
+            Keyword of the interpolation method to use with DATA. It can be
+            any keyword accepted by Vensim 'interpolate', 'look forward',
+            'keep backward' or 'raw'. If None, no keyword will be added,
+            Vensim will use the default interpolation method ('interpolate').
+            Default is None.
+
     """
     def __init__(self, var_name, dims, cell, description='', units='',
                  file=None, sheet=None, interp=None, **kwargs):
-        """
-        Parameters
-        ----------
-        var_name: str
-            The name of the variable in Vensim code and basestring for
-            cellrange names.
-
-        dims: list
-            List of the dimensions of the variable in the same order that
-            will be created the variable in the Vensim code.
-
-        cell: str
-            Reference cell of the data. First cellw with numeric values
-            (upper-left corner).
-
-        description: str (optional)
-            Description to include in the Vensim equations. By default no
-            description will be included.
-
-        units: str (optional)
-            Units to include in the Vensim equations. By default no
-            units will be included.
-
-        file: str (optional)
-            File where the data is. This argument is mandatory unless a
-            subscript range is defined across several files. Default is None.
-
-        sheet: str (optional)
-            Sheet where the data is. This argument is mandatory unless a
-            subscript range is defined across several sheets. Default is None.
-
-        interp: str or None (optional)
-             Keyword of the interpolation method to use with DATA. It can be
-             any keyword accepted by Vensim 'interpolate', 'look forward',
-             'keep backward' or 'raw'. If None, no keyword will be added,
-             Vensim will use the default interpolation method ('interpolate').
-             Default is None.
-
-        """
         super().__init__(var_name, dims, cell, description, units, file, sheet)
 
         if interp:
@@ -875,41 +873,40 @@ class Data(ExternalVariable):
 class Constants(ExternalVariable):
     """
     Class for creating GET DIRECT/XLS CONSTANTS equations and cellranges.
+
+    Parameters
+    ----------
+    var_name: str
+        The name of the variable in Vensim code and basestring for
+        cellrange names.
+
+    dims: list
+        List of the dimensions of the variable in the same order that
+        will be created the variable in the Vensim code.
+
+    cell: str
+        Reference cell of the data. First cellw with numeric values
+        (upper-left corner).
+
+    description: str (optional)
+        Description to include in the Vensim equations. By default no
+        description will be included.
+
+    units: str (optional)
+        Units to include in the Vensim equations. By default no
+        units will be included.
+
+    file: str (optional)
+        File where the data is. This argument is mandatory unless a
+        subscript range is defined across several files. Default is None.
+
+    sheet: str (optional)
+        Sheet where the data is. This argument is mandatory unless a
+        subscript range is defined across several sheets. Default is None.
+
     """
     def __init__(self, var_name, dims, cell, description='', units='',
                  file=None, sheet=None, **kwargs):
-        """
-        Parameters
-        ----------
-        var_name: str
-            The name of the variable in Vensim code and basestring for
-            cellrange names.
-
-        dims: list
-            List of the dimensions of the variable in the same order that
-            will be created the variable in the Vensim code.
-
-        cell: str
-            Reference cell of the data. First cellw with numeric values
-            (upper-left corner).
-
-        description: str (optional)
-            Description to include in the Vensim equations. By default no
-            description will be included.
-
-        units: str (optional)
-            Units to include in the Vensim equations. By default no
-            units will be included.
-
-        file: str (optional)
-            File where the data is. This argument is mandatory unless a
-            subscript range is defined across several files. Default is None.
-
-        sheet: str (optional)
-            Sheet where the data is. This argument is mandatory unless a
-            subscript range is defined across several sheets. Default is None.
-
-        """
         super().__init__(var_name, dims, cell, description, units, file, sheet)
         self.transpose = False
 

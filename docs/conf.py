@@ -16,9 +16,10 @@ import sys
 import mock
 import sphinx_rtd_theme
 
-MOCK_MODULES = ['numpy', 'scipy', 'matplotlib', 'matplotlib.pyplot', 'scipy.stats',
-                'scipy.integrate', 'pandas', 'lxml', 'xarray', 'autopep8',
-                'pysd']
+MOCK_MODULES = [
+    'numpy', 'pysd', 'pysd.py_backend', 'openpyxl', 'openpyxl.workbook',
+    'openpyxl.workbook.defined_name', 'pysd.py_backend.vensim',
+    'pysd.py_backend.vensim.vensim2py']
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
@@ -28,7 +29,6 @@ for mod_name in MOCK_MODULES:
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../'))
-sys.path.insert(0, os.path.abspath('../excels2vensim/'))
 
 # -- Project information -----------------------------------------------------
 
