@@ -72,6 +72,7 @@ Contents
 
    installation
    usage
+   api
    development
 
 Additional Resources

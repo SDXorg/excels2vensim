@@ -16,6 +16,12 @@ class Subscripts():
     def read(cls, file_name):
         """
         Read the subscripts form a .mdl or .json file.
+
+        Parameters
+        ----------
+        file_name: str
+            Full name of the .json or .mdl file.
+
         """
         file_ini, file_extension = os.path.splitext(file_name)
         if file_extension.lower() == ".mdl":
@@ -31,6 +37,12 @@ class Subscripts():
     def get(cls, key):
         """
         Get the value of key of _subscript_dict.
+
+        Parameters
+        ----------
+        key: str
+            Subscript range name to extract the subscripts.
+
         """
         return cls._subscript_dict[key]
 
@@ -45,6 +57,12 @@ class Subscripts():
     def set(cls, dict):
         """
         Set _subscript_dict to input value.
+
+        Parameters
+        ----------
+        dict: dict
+            The subscripts dictionary.
+
         """
         cls.clean()
         cls.update(dict)
@@ -54,6 +72,12 @@ class Subscripts():
         """
         Update _subscript_dict removing trailing whitespaces from keys
         and values.
+
+        Parameters
+        ----------
+        dict: dict
+            The subscripts dictionary.
+
         """
         cls._subscript_dict.update({
             key.strip(): [value.strip() for value in values]
