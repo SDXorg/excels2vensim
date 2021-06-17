@@ -14,6 +14,21 @@ for the interpolation series (time and x, respectibvely) has to be added.
 Some examples are given in `examples folder of the GitLab repository <https://gitlab.com/eneko.martin.martinez/excels2vensim/-/tree/master/examples>`_.
 Please, check them to understand the usage.
 
+.. note::
+    The parameter *along* means how the data is spreaded. A row vector is spreaded along columns, while a clumn vector is spreaded along rows.
+    Other possible values are sheets or files.
+
+    .. image:: figures/along.png
+        :width: 350 px
+        :align: center
+
+    The *separation* between a dimension depends on the *along* parameter. For columns and rows, the separator is the number of columns (or rows) until a change of a subscript in that dimension.
+    Note that the subscripts in the Excel file should be in the same order that are in the model's subscript range.
+    For sheets and files, the separation is the list of sheets (or files), ordered in the same order the subscripts are in the model's subcript range.
+
+    See the examples for more information.
+
+
 Using the GUI
 -------------
 A basic GUI can be launch using the following command in the terminal/PowerShell::
