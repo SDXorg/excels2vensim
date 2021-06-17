@@ -2,6 +2,7 @@ import os
 import json
 import tkinter as tkk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
+from tkinter.messagebox import showerror, showwarning
 from excels2vensim import Subscripts, execute
 
 class Application(tkk.Frame):
@@ -438,10 +439,69 @@ class Application(tkk.Frame):
             self.description = ''
 
     def next(self):
-        self.clean()
-        self.second_window()
+        warn = 0
+        if self.var_type.get() == "":
+            showwarning(
+                title="Missing information",
+                message="Variable type not given.")
+            warn += 1
+        if self.var_name.get() == "":
+            showwarning(
+                title="Missing information",
+                message="Variable name not given.")
+            warn += 1
+        if self.var_cell.get() == "":
+            showwarning(
+                title="Missing information",
+                message="Reference cell not given.")
+            warn += 1
+        if self.var_file.get() != "" and\
+          not os.path.isfile(self.var_file.get()):
+            showwarning(
+                title="File not found",
+                message=f"Cannot found input file '{self.var_file.get()}'")
+            warn += 1
+
+        if not warn:
+            self.clean()
+            self.second_window()
 
     def add(self):
+        warn = 0
+        for sub in self.subs:
+            if self.var_along[sub].get() == "":
+                showwarning(
+                    title="Missing information",
+                    message=f"Along not given for '{sub}'.")
+                warn += 1
+            if self.var_sep[sub].get() == "":
+                showwarning(
+                    title="Missing information",
+                    message=f"Sep not given for '{sub}'.")
+                warn += 1
+        if self.var_type.get() in ["Lookups", "Data"]:
+            if self.series_name.get() == "":
+                showwarning(
+                    title="Missing information",
+                    message="Series name not given.")
+                warn += 1
+            if self.series_cell.get() == "":
+                showwarning(
+                    title="Missing information",
+                    message="Series reference cell not given.")
+                warn += 1
+            if self.series_along.get() == "":
+                showwarning(
+                    title="Missing information",
+                    message="Series along not given.")
+                warn += 1
+            if self.series_len.get() == "":
+                showwarning(
+                    title="Missing information",
+                    message="Series length not given.")
+                warn += 1
+        if warn:
+            return
         name = self.var_name.get()
         var_type = self.var_type.get()
 
@@ -526,16 +586,19 @@ class Application(tkk.Frame):
         self.clean()
 
     def execute(self):
-        outname = asksaveasfilename(
-                title="Save vensim equations",
-                filetypes=(('.txt files', '*.txt'),
-                           ('All files', '*'))
-                )
-        vensim_eqs = execute(self.element_dict)
-
-        with open(outname, 'w') as file:
-            file.write(vensim_eqs)
-
+        try:
+            vensim_eqs = execute(self.element_dict)
+            outname = asksaveasfilename(
+                    title="Save vensim equations",
+                    filetypes=(('.txt files', '*.txt'),
+                            ('All files', '*'))
+                    )
+            with open(outname, 'w') as file:
+                file.write(vensim_eqs)
+        except Exception as err:
+            showerror(
+                title="Error when executing",
+                message=type(err).__name__) + ":" + err.args[0]
         self.destroy
 
 
