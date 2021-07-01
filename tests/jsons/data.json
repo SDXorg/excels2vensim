@@ -3,7 +3,7 @@
     "type": "DATA",
     "dims": ["AGE COHORT", "REGIONS", "GENDER"],
     "cell": "E5",
-    "file": "tmp_dir/inputs_data.xlsx",
+    "file": "inputs_data.xlsx",
     "sheet": "GPH",
     "description": "Total population per age, region and gender.",
     "units": "People",

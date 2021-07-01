@@ -7,6 +7,7 @@ import json
 
 import pysd.py_backend.vensim.vensim2py as pysd_v2py
 
+
 def get_subscripts(mdl_file, output=None):
     """
     Gets the subscripts from a Vensim .mdl model file.
@@ -30,9 +31,10 @@ def get_subscripts(mdl_file, output=None):
 
     if output:
         with open(output, 'w') as outfile:
-                json.dump(subscript_dict, outfile)
+            json.dump(subscript_dict, outfile)
 
     return subscript_dict
+
 
 def _translate_vensim(mdl_file):
     """
@@ -97,11 +99,10 @@ def _translate_section(section, root_path):
         for entry in model_elements:
             if entry['kind'] == 'entry'\
                 and ('<->' in entry['eqn']
-                    or (':' in entry['eqn'] and not ':=' in entry['eqn'])):
+                     or (':' in entry['eqn'] and ':=' not in entry['eqn'])):
                 entry.update(
                     pysd_v2py.get_equation_components(entry['eqn'], root_path)
                     )
-
 
     # Create a namespace for the subscripts
     subscript_dict = {}

@@ -3,6 +3,7 @@ Excel files manager class.
 """
 from openpyxl import load_workbook
 
+
 class Excels():
     """
     Class to save the read Excel files and thus avoid double reading

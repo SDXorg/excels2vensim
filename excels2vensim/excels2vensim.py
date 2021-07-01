@@ -17,7 +17,7 @@ from .utils.subscripts import Subscripts
 class ExternalVariable(object):
     def __init__(self, var_name, dims, cell, description, units, file, sheet):
         self.var_name = var_name.strip()
-        self.base_name = self._clean_identifier(self.var_name )
+        self.base_name = self._clean_identifier(self.var_name)
         if self.base_name != self.var_name:
             warnings.warn(
                 f"The name of the variable '{self.var_name}' has special "
@@ -105,14 +105,13 @@ class ExternalVariable(object):
             'read_along': read_along,
             'length': length}
 
-
         ref_row, ref_col = self._split_excel_cell(cell)
         if read_along == 'row':
             rows = [ref_row, ref_row + length - 1]
             cols = [ref_col, ref_col]
         elif read_along == 'col':
             rows = [ref_row, ref_row]
-            cols = [ref_col, ref_col + length -1]
+            cols = [ref_col, ref_col + length - 1]
         else:
             raise ValueError(
                 "\nread_along must be 'row' or 'col'."
@@ -120,7 +119,7 @@ class ExternalVariable(object):
 
         # add series cellrange name without specifiying the sheet
         self.series['cellrange'] = '$%s$%s:$%s$%s' % (
-            self._num_to_col(cols[0]), rows[0] + 1 ,
+            self._num_to_col(cols[0]), rows[0] + 1,
             self._num_to_col(cols[1]), rows[1] + 1)
 
     def _update_series_cellranges(self, sheets, files):
@@ -153,7 +152,7 @@ class ExternalVariable(object):
             for sheet in sheets for file in files]
 
         self.series['name'] =\
-             [self.series['name']] * len(self.series['cellrange'])
+            [self.series['name']] * len(self.series['cellrange'])
 
     def _build_boxes(self, visited):
         """
@@ -224,18 +223,18 @@ class ExternalVariable(object):
 
         # convert cols to alpha
         self.elements['col'] = [[self._num_to_col(col) for col in element]
-                           for element in self.elements['col']]
+                                for element in self.elements['col']]
 
         # convert rows to excel numbering
         self.elements['row'] = [[row+1 for row in element]
-                           for element in self.elements['row']]
+                                for element in self.elements['row']]
 
         # writting information
         self.elements['cellrange'] = [
             '%s!$%s$%s:$%s$%s' % (sheet, cols[0], rows[0], cols[1], rows[1])
-            for sheet, cols, rows in\
-            zip(self.elements['sheet'],
-                self.elements['col'], self.elements['row'])
+            for sheet, cols, rows in zip(self.elements['sheet'],
+                                         self.elements['col'],
+                                         self.elements['row'])
         ]
 
         return visited
@@ -656,7 +655,7 @@ class Lookups(ExternalVariable):
         super()._build_boxes([self.series['read_along']])
 
         super()._update_series_cellranges(set(self.elements['sheet']),
-                                         set(self.elements['file']))
+                                          set(self.elements['file']))
 
         # generate Vensim equations
         vensim_eqs = ""
@@ -671,12 +670,11 @@ class Lookups(ExternalVariable):
             vensim_eqs += vensim_eq
 
         vensim_eqs = textwrap.dedent(vensim_eqs)
-        vensim_eqs = vensim_eqs[:-4]\
-                     + f'\n\t~\t{self.units}'\
-                     + f'\n\t~\t{self.description}'\
-                     + '\n\t|'
+        vensim_eqs = vensim_eqs[:-4] + f'\n\t~\t{self.units}'\
+            + f'\n\t~\t{self.description}\n\t|'
 
         return vensim_eqs
+
 
 class Data(ExternalVariable):
     """
@@ -842,7 +840,7 @@ class Data(ExternalVariable):
         super()._build_boxes([self.series['read_along']])
 
         super()._update_series_cellranges(set(self.elements['sheet']),
-                                         set(self.elements['file']))
+                                          set(self.elements['file']))
 
         # generate Vensim equations
         vensim_eqs = ""
@@ -863,12 +861,11 @@ class Data(ExternalVariable):
             vensim_eqs += vensim_eq
 
         vensim_eqs = textwrap.dedent(vensim_eqs)
-        vensim_eqs = vensim_eqs[:-4]\
-                     + f'\n\t~\t{self.units}'\
-                     + f'\n\t~\t{self.description}'\
-                     + '\n\t|'
+        vensim_eqs = vensim_eqs[:-4] + f'\n\t~\t{self.units}'\
+            + f'\n\t~\t{self.description}\n\t|'
 
         return vensim_eqs
+
 
 class Constants(ExternalVariable):
     """
@@ -978,8 +975,6 @@ class Constants(ExternalVariable):
         if visited in [["row"], ["col", "row"]]:
             self.transpose = True
 
-
-
         # generate Vensim equations
         vensim_eqs = ""
         for subs, file, sheet, cellname in zip(self.elements['subs'],
@@ -995,10 +990,8 @@ class Constants(ExternalVariable):
             vensim_eqs += vensim_eq
 
         vensim_eqs = textwrap.dedent(vensim_eqs)
-        vensim_eqs = vensim_eqs[:-4]\
-                     + f'\n\t~\t{self.units}'\
-                     + f'\n\t~\t{self.description}'\
-                     + '\n\t|'
+        vensim_eqs = vensim_eqs[:-4] + f'\n\t~\t{self.units}'\
+            + f'\n\t~\t{self.description}\n\t|'
 
         return vensim_eqs
 

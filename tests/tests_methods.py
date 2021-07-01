@@ -1,9 +1,12 @@
 import shutil
-from sys import argv
+import os
+from pathlib import Path
 
 import pytest
 
 import excels2vensim as e2v
+
+cdir = Path(__file__).parent
 
 
 def test_col_to_num():
@@ -43,10 +46,11 @@ def test_split_excel_cell():
 
     # Cells
     cells = [(1, 0, "A2"), (573, 7, "h574"),
-                (1, 572, "Va2"), (1, 728, "ABA2")]
+             (1, 572, "Va2"), (1, 728, "ABA2")]
 
     for row, col, cell in cells:
         assert (row, col) == split_excel_cell(cell)
+
 
 def test_clean_identifier():
     """
@@ -59,7 +63,7 @@ def test_clean_identifier():
     assert clean_identifier('   huyauJHGYG87272j_*') == 'huyauJHGYG87272j'
     assert clean_identifier(' L  huyauJHGYG87272j_*') == 'L_huyauJHGYG87272j'
     assert clean_identifier('   huyauJ_h  ?  HGYG8-727+2j_*')\
-         == 'huyauJ_h_HGYG8_727_2j'
+        == 'huyauJ_h_HGYG8_727_2j'
 
 
 def test_subscripts_errors(tmp_path):
@@ -83,7 +87,6 @@ def test_subscripts_errors(tmp_path):
 
     obj1.add_dimension('sector', 'col')
     obj1.add_dimension('source', 'col')
-
 
     expected = "\nTwo or more dimensions are defined along col with step 1."
 
@@ -165,7 +168,6 @@ def test_add_series(tmp_path):
 
     assert obj.series['cellrange'] == '$B$5:$B$14'
 
-
     # across error
     expected = "\nread_along must be 'row' or 'col'."
 
@@ -177,13 +179,14 @@ def test_write_cell_range(tmp_path):
     """
     Test for write_cell_range and Excels class
     """
+    os.chdir(cdir.joinpath("tmp_dir"))
     # copy original file without cellranges
-    shutil.copy2('original_files/white.xlsx',
-                 'tmp_dir/white.xlsx')
+    shutil.copy2(cdir.joinpath('original_files/white.xlsx'),
+                 'white.xlsx')
 
     name = 'my_cellrange'
     sheet = 'Sheet1'
-    file = 'tmp_dir/white.xlsx'
+    file = 'white.xlsx'
 
     write_cellrange = e2v.Constants._write_cellrange
 
@@ -195,7 +198,7 @@ def test_write_cell_range(tmp_path):
     wb = e2v.Excels._Excels[file]
 
     sheetId = [sheetname_wb.lower() for sheetname_wb
-                   in wb.sheetnames].index(sheet.lower())
+               in wb.sheetnames].index(sheet.lower())
 
     assert name in wb.defined_names.localnames(sheetId)
     assert wb.defined_names.get(name, sheetId).attr_text == 'Sheet1!$A$1:$B$2'
@@ -245,4 +248,4 @@ def test_load_from_json():
                + " It must be 'constants', 'lookups' or 'data'."
     # invalid var name
     with pytest.raises(ValueError, match=expected):
-        e2v.load_from_json('jsons/non_valid.json')
+        e2v.load_from_json(cdir.joinpath('jsons/non_valid.json'))

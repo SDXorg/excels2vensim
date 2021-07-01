@@ -6,6 +6,7 @@ import json
 
 from .subscript_parser import get_subscripts
 
+
 class Subscripts():
     """
     Class to save the subscript dictionary.
@@ -89,4 +90,3 @@ class Subscripts():
         Cleans the subscript dict.
         """
         cls._subscript_dict = {}
-
