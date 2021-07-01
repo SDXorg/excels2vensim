@@ -2,7 +2,7 @@
     "type": "Constants",
     "dims": ["source", "sector", "region", "out"],
     "cell": "C4",
-    "file": "tmp_dir/inputs.xlsx",
+    "file": "inputs.xlsx",
     "description": "This is my variable.",
     "units": "dmnl",
     "dimensions": {

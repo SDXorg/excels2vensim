@@ -5,20 +5,21 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.messagebox import showerror, showwarning
 from excels2vensim import Subscripts, execute
 
+
 class Application(tkk.Frame):
-    def __init__(self, master=None):
+    def __init__(self, master=None, subscript_file=None, output_file=None):
         super().__init__(master)
         self.master = master
-        self.pack(pady = 10, padx = 10)
+        self.pack(pady=10, padx=10)
         self.all_subs = list()
         self.non_selected_subs = self.all_subs.copy()
         self.subs = []
         self.description = ''
         self.element_dict = dict()
+        self.output_file = output_file
         self.create_vars()
-        self.subscript_selector()
+        self.subscript_selector(subscript_file)
         self.main_window()
-
 
     def create_vars(self):
 
@@ -47,11 +48,11 @@ class Application(tkk.Frame):
         self.var_loading.trace(
             "w", lambda name, index, mode: self.update_info())
 
-
         # Subscript name
         self.var_sub = tkk.StringVar(self)
         self.var_sub.trace(
-            "w", lambda name, index, mode: self.update_list(self.non_selected_subs))
+            "w", lambda name, index, mode: self.update_list(
+                self.non_selected_subs))
 
         self.var_subs_info = tkk.StringVar(self)
 
@@ -82,37 +83,41 @@ class Application(tkk.Frame):
 
         self.force_warning = None
 
-    def subscript_selector(self):
-        mdl_types = '*.mdl *.MDL'
-        json_types = '*.json *.JSON'
+    def subscript_selector(self, subscript_file=None):
 
-        file_name = askopenfilename(
-                title="Select external data file",
-                filetypes=(('.mdl and .json files',
-                            ' '.join([mdl_types, json_types])),
-                           ('.mdl files', mdl_types),
-                           ('.json files', json_types),
-                           ("All files", '*'))
-        )
+        if not subscript_file:
+            mdl_types = '*.mdl *.MDL'
+            json_types = '*.json *.JSON'
 
-        if file_name.lower().endswith('.mdl'):
+            subscript_file = askopenfilename(
+                    title="Select external data file",
+                    filetypes=(('.mdl and .json files',
+                                ' '.join([mdl_types, json_types])),
+                               ('.mdl files', mdl_types),
+                               ('.json files', json_types),
+                               ("All files", '*'))
+            )
+
+        if subscript_file.lower().endswith('.mdl'):
             tkk.Label(self,
-                      text=f"Reading {file_name}...\n"
+                      text=f"Reading {subscript_file}...\n"
                            + "This may take some seconds").grid(
-                row = 0, column = 0, padx=10, pady=10)
+                row=0, column=0, padx=10, pady=10)
 
-        cwd = os.path.dirname(file_name)
+        Subscripts.read(subscript_file)
+
+        cwd = os.path.dirname(subscript_file)
         print(f"Setting current working directory to: {cwd}")
         os.chdir(cwd)
 
-        Subscripts.read(file_name)
         self.clean()
         self.all_subs = list(Subscripts.get_ranges())
         self.non_selected_subs = self.all_subs.copy()
 
     def main_window(self):
 
-        tkk.Label(self, textvariable=self.var_info).grid(row=0, column=0, columnspan=5, padx=10, pady=10)
+        tkk.Label(self, textvariable=self.var_info).grid(
+            row=0, column=0, columnspan=5, padx=10, pady=10)
 
         # var_type
         self.var_type_start = 1
@@ -121,13 +126,13 @@ class Application(tkk.Frame):
             self, self.var_type, "Constants", "Data", "Lookups")
 
         tkk.Label(self, text="Variable type:").grid(
-            row = self.var_type_start, column = 0, padx=10, pady=10)
+            row=self.var_type_start, column=0, padx=10, pady=10)
         self.var_type_drop_down.grid(row=self.var_type_start, column=1)
 
         # name
         name_start = 2
         tkk.Label(self, text="Variable name:").grid(
-            row = name_start, column = 0, padx=10, pady=10)
+            row=name_start, column=0, padx=10, pady=10)
         self.entry_name = tkk.Entry(self, textvariable=self.var_name)
         self.entry_name.grid(row=name_start, column=1)
 
@@ -136,17 +141,17 @@ class Application(tkk.Frame):
             self, self.var_loading, "DIRECT", "XLS")
 
         tkk.Label(self, text="Loading:").grid(
-            row = name_start, column = 2, padx=10, pady=10)
+            row=name_start, column=2, padx=10, pady=10)
 
         self.var_loading_drop_down.grid(row=name_start, column=3)
 
         # subs
         subs_start = 3
         tkk.Label(self, text="Subscript:").grid(
-            row = subs_start, column = 0, padx=10, pady=10)
+            row=subs_start, column=0, padx=10, pady=10)
 
         tkk.Label(self, text="search").grid(
-            row = subs_start+2, column = 0)
+            row=subs_start+2, column=0)
         self.entry_subs = tkk.Entry(self, textvariable=self.var_sub)
         self.entry_subs.grid(row=subs_start+3, column=0)
 
@@ -171,13 +176,13 @@ class Application(tkk.Frame):
         # units and descr
         units_start = 7
         tkk.Label(self, text="Variable units:").grid(
-            row = units_start, column=0, padx=10, pady=10)
+            row=units_start, column=0, padx=10, pady=10)
         self.entry_unit = tkk.Entry(self, textvariable=self.var_units)
         self.entry_unit.grid(
             row=units_start, column=1, columnspan=1)
 
         tkk.Label(self, text="Variable description:").grid(
-            row = units_start+1, column=0, padx=10, pady=10)
+            row=units_start+1, column=0, padx=10, pady=10)
         self.entry_desc = tkk.Text(self)
         self.entry_desc.grid(
             row=units_start+1, column=1, rowspan=2, columnspan=3)
@@ -187,20 +192,20 @@ class Application(tkk.Frame):
         # file and sheet
         units_start = 10
         tkk.Label(self, text="File name:").grid(
-            row = units_start, column=0, padx=10, pady=10)
+            row=units_start, column=0, padx=10, pady=10)
         self.entry_file = tkk.Entry(self, textvariable=self.var_file)
         self.entry_file.grid(
             row=units_start, column=1, columnspan=1)
 
         tkk.Label(self, text="Sheet name:").grid(
-            row = units_start+1, column=0, padx=10, pady=10)
+            row=units_start+1, column=0, padx=10, pady=10)
         self.entry_file = tkk.Entry(self, textvariable=self.var_sheet)
         self.entry_file.grid(
             row=units_start+1, column=1, columnspan=1)
 
         # reference cell
         tkk.Label(self, text="Reference cell:").grid(
-            row = units_start, column=2, padx=10, pady=10)
+            row=units_start, column=2, padx=10, pady=10)
         self.entry_file = tkk.Entry(self, textvariable=self.var_cell)
         self.entry_file.grid(
             row=units_start, column=3, columnspan=1)
@@ -211,7 +216,7 @@ class Application(tkk.Frame):
             self, text="Force overwriting cellrange names",
             variable=self.var_force)
         self.force_cb.grid(
-            row = self.force_start, column=0, columnspan=2, padx=10, pady=10)
+            row=self.force_start, column=0, columnspan=2, padx=10, pady=10)
 
         # next
         next_start = 13
@@ -221,7 +226,8 @@ class Application(tkk.Frame):
         self.next_button.grid(row=next_start, column=4, padx=10, pady=10)
 
     def second_window(self):
-        tkk.Label(self, textvariable=self.var_info).grid(row=0, column=0, columnspan=5, padx=10, pady=10)
+        tkk.Label(self, textvariable=self.var_info).grid(
+            row=0, column=0, columnspan=5, padx=10, pady=10)
 
         if self.var_type.get() == "Constants":
             subs_start = 2
@@ -239,8 +245,9 @@ class Application(tkk.Frame):
                 row=1, column=0, padx=10, pady=10)
 
             tkk.Label(self, text="Name:").grid(
-                row=2, column = 0, padx=10, pady=10)
-            self.entry_dim_name = tkk.Entry(self, textvariable=self.series_name)
+                row=2, column=0, padx=10, pady=10)
+            self.entry_dim_name = tkk.Entry(
+                self, textvariable=self.series_name)
             self.entry_dim_name.grid(row=2, column=1)
 
             tkk.Label(self, text="Along:").grid(
@@ -252,7 +259,8 @@ class Application(tkk.Frame):
 
             tkk.Label(self, text="Reference cell:").grid(
                 row=2, column=2, padx=10, pady=10)
-            self.entry_dim_cell = tkk.Entry(self, textvariable=self.series_cell)
+            self.entry_dim_cell = tkk.Entry(
+                self, textvariable=self.series_cell)
             self.entry_dim_cell.grid(row=2, column=3)
 
             tkk.Label(self, text="Length:").grid(
@@ -262,7 +270,7 @@ class Application(tkk.Frame):
 
         if self.subs:
             self.create_subs_vars()
-            tkk.Label(self, text=f"Subscripts information").grid(
+            tkk.Label(self, text="Subscripts information").grid(
                 row=subs_start-1, column=0, padx=10, pady=10)
             tkk.Label(self, text="Along").grid(
                 row=subs_start, column=1, padx=10, pady=10)
@@ -274,12 +282,12 @@ class Application(tkk.Frame):
                     row=subs_start+i+2, column=0, padx=10, pady=10)
                 option_menu = tkk.OptionMenu(
                     self, self.var_along[sub], "row", "col", "sheet", "file")
-                option_menu.grid(row=subs_start+i+2, column=1, padx=10, pady=10)
+                option_menu.grid(
+                    row=subs_start+i+2, column=1, padx=10, pady=10)
                 entry_sep = tkk.Entry(self, textvariable=self.var_sep[sub])
                 entry_sep.grid(row=subs_start+i+2, column=2, padx=10, pady=10)
         else:
             i = -1
-
 
         # go
         end_start = subs_start + len(self.subs) + 2
@@ -294,7 +302,7 @@ class Application(tkk.Frame):
         self.next_button.grid(row=end_start, column=4, padx=10, pady=10)
 
     def last_window(self):
-        tkk.Label(self, text=f"Current elements:").grid(
+        tkk.Label(self, text="Current elements:").grid(
                 row=0, column=0, columnspan=4, padx=10, pady=10)
         for i, (element, val) in enumerate(self.element_dict.items()):
             tkk.Label(self, text=f"{element} ({val['type']})").grid(
@@ -325,7 +333,7 @@ class Application(tkk.Frame):
 
             self.keyword_label = tkk.Label(self, text="Keyword:")
             self.keyword_label.grid(
-                row = self.var_type_start, column = 2)
+                row=self.var_type_start, column=2)
             self.var_type_data_drop_down.grid(row=self.var_type_start,
                                               column=3)
         elif self.var_type_data_drop_down:
@@ -342,7 +350,7 @@ class Application(tkk.Frame):
                 text="Warning this may remove existing\n "
                      + "cellranges from the file")
             self.force_warning.grid(
-                row = self.force_start+1, column = 0, columnspan=2)
+                row=self.force_start+1, column=0, columnspan=2)
         elif self.force_warning:
             self.force_warning.destroy()
 
@@ -377,7 +385,6 @@ class Application(tkk.Frame):
         self.non_selected_subs = self.all_subs.copy()
         self.subs = []
         self.update_subs_info()
-
 
     def create_subs_vars(self):
         self.var_along = {sub: tkk.StringVar(self) for sub in self.subs}
@@ -456,7 +463,7 @@ class Application(tkk.Frame):
                 message="Reference cell not given.")
             warn += 1
         if self.var_file.get() != "" and\
-          not os.path.isfile(self.var_file.get()):
+           not os.path.isfile(self.var_file.get()):
             showwarning(
                 title="File not found",
                 message=f"Cannot found input file '{self.var_file.get()}'")
@@ -566,8 +573,8 @@ class Application(tkk.Frame):
         self.main_window()
 
     def clean(self):
-        for l in self.grid_slaves():
-            l.destroy()
+        for slave in self.grid_slaves():
+            slave.destroy()
 
     def clean_all(self):
         self.var_name.set('')
@@ -588,11 +595,14 @@ class Application(tkk.Frame):
     def execute(self):
         try:
             vensim_eqs = execute(self.element_dict)
-            outname = asksaveasfilename(
-                    title="Save vensim equations",
-                    filetypes=(('.txt files', '*.txt'),
-                            ('All files', '*'))
-                    )
+            if self.output_file:
+                outname = self.output_file
+            else:
+                outname = asksaveasfilename(
+                        title="Save vensim equations",
+                        filetypes=(('.txt files', '*.txt'),
+                                   ('All files', '*'))
+                        )
             with open(outname, 'w') as file:
                 file.write(vensim_eqs)
         except Exception as err:
@@ -602,8 +612,9 @@ class Application(tkk.Frame):
         self.destroy
 
 
-def start_gui():
+def start_gui(subscript_file=None, output_file=None):
     root = tkk.Tk()
     root.title("excels2vensim")
-    app = Application(master=root)
+    app = Application(
+        master=root, subscript_file=subscript_file, output_file=output_file)
     app.mainloop()

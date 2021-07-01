@@ -1,6 +1,7 @@
 before_script:
   - apt update -qy
   - apt install -y python3.7 python3-pip
+  - apt install python3-tk
   - python3 -m pip install --upgrade pip
   - python3 -m pip install .
 
