@@ -33,7 +33,7 @@ Using the GUI
 -------------
 A basic GUI can be launch using the following command in the terminal/PowerShell::
 
-    python -m excels2vensim
+    python -m excels2vensim --gui
 
 First, the subscripts file will be asked, this can be provided using the vensim model .mdl file.
 
