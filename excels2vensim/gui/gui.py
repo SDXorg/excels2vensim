@@ -568,8 +568,10 @@ class Application(tkk.Frame):
                 title="Save configuration",
                 filetypes=(('.json files',
                             '*.json *.JSON')))
+        if not outname.lower().endswith('.json'):
+            outname += '.json'
         with open(outname, 'w') as outfile:
-            json.dump(self.element_dict, outfile)
+            json.dump(self.element_dict, outfile, indent=4)
 
     def previous(self):
         self.clean()
@@ -606,6 +608,8 @@ class Application(tkk.Frame):
                         filetypes=(('.txt files', '*.txt'),
                                    ('All files', '*'))
                         )
+            if not outname.lower().endswith('.txt'):
+                outname += '.txt'
             with open(outname, 'w') as file:
                 file.write(vensim_eqs)
         except Exception as err:

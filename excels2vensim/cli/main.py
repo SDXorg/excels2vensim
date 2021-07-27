@@ -40,3 +40,5 @@ def main(args):
             file.write(eqs)
     else:
         print(eqs)
+
+    sys.exit()
