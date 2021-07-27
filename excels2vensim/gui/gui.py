@@ -375,7 +375,10 @@ class Application(tkk.Frame):
 
     def add_subs(self, sub):
         w = sub.widget
-        new_sub = w.get(w.curselection()[0])
+        try:
+            new_sub = w.get(w.curselection()[0])
+        except IndexError:
+            return
         self.subs.append(new_sub)
         self.non_selected_subs.remove(new_sub)
         self.entry_subs.delete(0, 'end')
