@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import tkinter as tkk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
@@ -616,7 +617,9 @@ class Application(tkk.Frame):
             showerror(
                 title="Error when executing",
                 message=type(err).__name__) + ":" + err.args[0]
-        self.destroy
+            raise err
+        self.destroy()
+        sys.exit()
 
 
 def start_gui(subscript_file=None, output_file=None):

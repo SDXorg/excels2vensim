@@ -291,3 +291,53 @@ def test_data_with_keywords(tmp_path):
             '',
             '',
             interp='non_valid')
+
+
+def test_force(tmp_path):
+    """
+    Test for force option
+    """
+    from openpyxl import load_workbook
+
+    os.chdir(cdir.joinpath("tmp_dir"))
+    # copy original file without data
+    shutil.copy2(cdir.joinpath("original_files/inputs.xlsx"),
+                 "inputs_force.xlsx")
+
+    element_dict = {
+        "my_var": {
+            "type": "constants",
+            "force": False,
+            "loading": "DIRECT",
+            "dims": [],
+            "cell": "A10",
+            "description": "",
+            "units": "",
+            "file": "inputs_force.xlsx",
+            "sheet": "Region1",
+            "dimensions": {}
+    }}
+
+    e2v.execute(element_dict)
+
+    wb = load_workbook("inputs_force.xlsx")
+    assert "my_var" in wb.defined_names.localnames(0)
+    assert wb.defined_names.get("my_var", 0).attr_text == 'Region1!$A$10:$A$10'
+    wb.close()
+
+    element_dict["my_var"]["cell"] = "B34"
+
+    expected = r"Trying to write a cellrange with name 'my_var' at "\
+               r"'Region1!\$B\$34:\$B\$34'. However, 'my_var' already exist "\
+               r"in 'Region1!\$A\$10:\$A\$10'\nUse force=True to overwrite it."
+    with pytest.raises(ValueError, match=expected):
+        e2v.execute(element_dict)
+
+    element_dict["my_var"]["force"] = True
+
+    e2v.execute(element_dict)
+
+    wb = load_workbook("inputs_force.xlsx")
+    assert "my_var" in wb.defined_names.localnames(0)
+    assert wb.defined_names.get("my_var", 0).attr_text == 'Region1!$B$34:$B$34'
+    wb.close()

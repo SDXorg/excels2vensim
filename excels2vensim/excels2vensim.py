@@ -1061,11 +1061,11 @@ def execute(vars_dict):
         for dimension, along in info['dimensions'].items():
             obj.add_dimension(dimension, *along)
 
-        if hasattr(info, 'force'):
+        if 'force' in info:
             force = info['force']
         else:
             force = False
-        if hasattr(info, 'loading'):
+        if 'loading' in info:
             loading = info['loading']
         else:
             loading = 'DIRECT'
