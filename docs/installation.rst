@@ -4,11 +4,19 @@ Installation
 Installing using pip
 --------------------
 
-To install the excels2vensim package from the Python package index use the following command:
+To install the *excels2vensim* package from the Python package index use the following command:
 
 .. code-block:: bash
 
    pip install excels2vensim
+
+Installing with conda
+---------------------
+To install *excels2vensim* with conda, using the conda-forge channel, into a conda environment, use the following command:
+
+.. code-block:: bash
+
+   conda install -c conda-forge excels2vensim
 
 Installing from source
 ----------------------
@@ -28,6 +36,6 @@ From the project's main directory, use the following command to install it:
 
 Required Dependencies
 ---------------------
-excels2vensim uses `PySD <https://pysd.readthedocs.io>`_ library for reading subscripts from Vensims model file. It requires at least **Python 3.7** and **PySD 1.4**.
+*excels2vensim* uses `PySD <https://pysd.readthedocs.io>`_ library for reading subscripts from Vensims model file. It requires at least **Python 3.7** and **PySD 1.4**.
 
-If not installed, PySD should be built automatically if you are installing via `pip` or from source.
+If not installed, *PySD* should be built automatically if you are installing via `pip`, using `conda`, or from source.

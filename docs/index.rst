@@ -11,6 +11,7 @@ Easy generate Vensim GET XLS/DIRECT equations with cellrange names.
 |made-with-sphinx-doc|
 |docs|
 |PyPI license|
+|Anaconda package|
 |PyPI package|
 |PyPI status|
 |PyPI pyversions|
@@ -25,6 +26,9 @@ Easy generate Vensim GET XLS/DIRECT equations with cellrange names.
 
 .. |PyPI license| image:: https://img.shields.io/pypi/l/excels2vensim.svg
    :target: https://gitlab.com/eneko.martin.martinez/excels2vensim/-/blob/master/LICENSE
+
+.. |Anaconda package| image:: https://anaconda.org/conda-forge/excels2vensim/badges/version.svg
+   :target: https://anaconda.org/conda-forge/excels2vensim
 
 .. |PyPI package| image:: https://badge.fury.io/py/excels2vensim.svg
     :target: https://badge.fury.io/py/excels2vensim
