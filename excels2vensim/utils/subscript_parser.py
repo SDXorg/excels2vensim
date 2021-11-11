@@ -5,7 +5,7 @@ import os
 import warnings
 import json
 
-import pysd.py_backend.vensim.vensim2py as pysd_v2py
+import pysd.translation.vensim.vensim2py as pysd_v2py
 
 
 def get_subscripts(mdl_file, output=None):
