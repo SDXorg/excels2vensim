@@ -1,0 +1,44 @@
+{
+    "population_lookup": {
+        "type": "lookups",
+        "dims": [],
+        "cell": "D5",
+        "file": "../tmp_dir/inputs_dmnl.xlsx",
+        "sheet": "EU27",
+        "description": "Total population per gender, age and region.",
+        "units": "People",
+        "dimensions": {},
+        "x": {
+            "name": "time",
+            "cell": "D4",
+            "read_along": "col",
+            "length": 16
+            }
+    },
+    "population_data": {
+        "type": "data",
+        "dims": [],
+        "cell": "D6",
+        "file": "../tmp_dir/inputs_dmnl.xlsx",
+        "sheet": "EU27",
+        "description": "Total population per gender, age and region.",
+        "units": "People",
+        "dimensions": {},
+        "time": {
+            "name": "time",
+            "cell": "D4",
+            "read_along": "col",
+            "length": 16
+            }
+    },
+    "population_constant": {
+        "type": "constants",
+        "dims": [],
+        "cell": "D7",
+        "file": "../tmp_dir/inputs_dmnl.xlsx",
+        "sheet": "EU27",
+        "description": "Total population per gender, age and region.",
+        "units": "People",
+        "dimensions": {}
+    }
+}

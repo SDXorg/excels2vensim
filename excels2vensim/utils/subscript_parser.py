@@ -1,11 +1,11 @@
 """
 Functions for parsing the subscript from a .mdl file using PySD.
 """
-import os
 import warnings
 import json
+from pathlib import Path
 
-import pysd.py_backend.vensim.vensim2py as pysd_v2py
+import pysd.translation.vensim.vensim2py as pysd_v2py
 
 
 def get_subscripts(mdl_file, output=None):
@@ -56,7 +56,7 @@ def _translate_vensim(mdl_file):
     >>> translate_vensim('my_model.mdl')
 
     """
-    root_path = os.path.split(mdl_file)[0]
+    root_path = Path(mdl_file).parent
     with open(mdl_file, 'r', encoding='UTF-8') as in_file:
         text = in_file.read()
 

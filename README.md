@@ -17,7 +17,7 @@ This library is able to automate the generation of the following type of equatio
 
 ## Requirements
 - Python 3.7+
-- PySD 1.4+
+- PySD 2.1.1+
 
 ## Resources
 See the [project documentation](http://excels2vensim.readthedocs.org/) for information about:

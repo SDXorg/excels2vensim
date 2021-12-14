@@ -1,8 +1,8 @@
 """
 Subscript manager class.
 """
-import os
 import json
+from pathlib import Path
 
 from .subscript_parser import get_subscripts
 
@@ -24,11 +24,11 @@ class Subscripts():
             Full name of the .json or .mdl file.
 
         """
-        file_ini, file_extension = os.path.splitext(file_name)
-        if file_extension.lower() == ".mdl":
+        file_name = Path(file_name)
+        if file_name.suffix.lower() == ".mdl":
             cls.set(get_subscripts(
-                file_name, file_ini + '_subscripts.json'))
-        elif file_extension.lower() == ".json":
+                file_name, str(file_name.with_suffix("")) + "_subscripts.json"))
+        elif file_name.suffix.lower() == ".json":
             with open(file_name) as file:
                 cls.set(json.load(file))
         else:
