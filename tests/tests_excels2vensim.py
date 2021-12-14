@@ -2,6 +2,7 @@
 Tests for the general functioning of the library
 """
 import os
+import sys
 from pathlib import Path
 import subprocess
 import shutil
@@ -13,6 +14,9 @@ import pytest
 import excels2vensim as e2v
 
 cdir = Path(__file__).parent
+
+encoding_stdout = sys.stdout.encoding or "utf-8"
+encoding_stderr = sys.stderr.encoding or "utf-8"
 
 
 def test_constants(tmp_path):
@@ -291,6 +295,37 @@ def test_data_with_keywords(tmp_path):
             '',
             '',
             interp='non_valid')
+
+
+def test_dimensionless_data(tmp_path):
+
+    os.chdir(cdir.joinpath("tmp_dir"))
+    # copy original file without cellranges
+    shutil.copy2(cdir.joinpath('original_files/inputs_data2.xlsx'),
+                 cdir.joinpath('tmp_dir/inputs_dmnl.xlsx'))
+
+    subs_dir = cdir.joinpath("subscripts/data_subscripts.json")
+
+    conf_dir = cdir.joinpath("jsons/dimensionless.json")
+
+    # test command line
+    out = subprocess.run([
+        "python3", "-m", "excels2vensim",
+        subs_dir, conf_dir], capture_output=True)
+
+    stdout = out.stdout.decode(encoding_stdout)
+
+    assert "population_lookup=\n\t"\
+        "GET_DIRECT_LOOKUPS('../tmp_dir/inputs_dmnl.xlsx', 'EU27',"\
+        " 'time', 'population_lookup')" in stdout
+
+    assert "population_data:=\n\t"\
+        "GET_DIRECT_DATA('../tmp_dir/inputs_dmnl.xlsx', 'EU27',"\
+        " 'time', 'population_data')" in stdout
+
+    assert "population_constant=\n\t"\
+        "GET_DIRECT_CONSTANTS('../tmp_dir/inputs_dmnl.xlsx', 'EU27',"\
+        " 'population_constant')" in stdout
 
 
 def test_force(tmp_path):

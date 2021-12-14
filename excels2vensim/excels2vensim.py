@@ -663,8 +663,12 @@ class Lookups(ExternalVariable):
                                                self.elements['file'],
                                                self.elements['sheet'],
                                                self.elements['cellname']):
+            if subs:
+                subs_write = f"[{', '.join(map(str, subs))}]"
+            else:
+                subs_write = ""
             vensim_eq = f"""
-            {self.var_name}[{', '.join(map(str, subs))}]=
+            {self.var_name}{subs_write}=
             \tGET_{loading}_LOOKUPS('{file}', '{sheet}', '{self.series['name'][0]}', '{cellname}') ~~|"""
 
             vensim_eqs += vensim_eq
@@ -848,8 +852,12 @@ class Data(ExternalVariable):
                                                self.elements['file'],
                                                self.elements['sheet'],
                                                self.elements['cellname']):
+            if subs:
+                subs_write = f"[{', '.join(map(str, subs))}]"
+            else:
+                subs_write = ""
             vensim_eq = f"""
-            {self.var_name}[{', '.join(map(str, subs))}]"""
+            {self.var_name}{subs_write}"""
             if self.interp:
                 # add keyword for interpolation method
                 vensim_eq += f":{self.interp}::="
@@ -981,10 +989,14 @@ class Constants(ExternalVariable):
                                                self.elements['file'],
                                                self.elements['sheet'],
                                                self.elements['cellname']):
+            if subs:
+                subs_write = f"[{', '.join(map(str, subs))}]"
+            else:
+                subs_write = ""
             if self.transpose:
                 cellname += '*'
             vensim_eq = f"""
-            {self.var_name}[{', '.join(map(str, subs))}]=
+            {self.var_name}{subs_write}=
             \tGET_{loading}_CONSTANTS('{file}', '{sheet}', '{cellname}') ~~|"""
 
             vensim_eqs += vensim_eq
