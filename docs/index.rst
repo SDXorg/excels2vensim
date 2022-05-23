@@ -66,7 +66,7 @@ The `original code for excels2vensim is available at GitLab <https://gitlab.com/
 Requirements
 ------------
 * Python 3.7+
-* PySD 2.1.1+
+* PySD 3.0+
 
 Contents
 --------

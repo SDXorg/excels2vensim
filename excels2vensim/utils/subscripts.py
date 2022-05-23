@@ -27,7 +27,7 @@ class Subscripts():
         file_name = Path(file_name)
         if file_name.suffix.lower() == ".mdl":
             cls.set(get_subscripts(
-                file_name, str(file_name.with_suffix("")) + "_subscripts.json"))
+                file_name, str(file_name.with_suffix(""))+"_subscripts.json"))
         elif file_name.suffix.lower() == ".json":
             with open(file_name) as file:
                 cls.set(json.load(file))
