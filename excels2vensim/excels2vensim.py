@@ -271,8 +271,8 @@ class ExternalVariable(object):
         # dimension gives the table shape
         if isinstance(steps, int):
             list_out = []
-            for current_coord in self.elements[read_along]:
-                list_out.append(current_coord + np.array([0, steps]))
+            for coord in self.elements[read_along]:
+                list_out.append(coord + np.array([0, steps]))
 
             self.elements[read_along] = list_out
             return
@@ -284,18 +284,18 @@ class ExternalVariable(object):
 
         for along in coords_to_duplicate:
             list_out = []
-            for current_coord in self.elements[along]:
+            for coord in self.elements[along]:
                 for step in steps:
-                    list_out.append(current_coord)
+                    list_out.append(coord)
             self.elements[along] = list_out
 
         list_out = []
         names_out = []
         if read_along in ['col', 'row']:
             # udpate cols or rows to read
-            for current_coord in self.elements[read_along]:
+            for coord in self.elements[read_along]:
                 for step in steps:
-                    list_out.append(current_coord + step)
+                    list_out.append(coord + step)
             self.elements[read_along] = list_out
             for current_name in self.elements['cellname']:
                 for sub in subs:
@@ -309,11 +309,10 @@ class ExternalVariable(object):
             self.elements['cellname'] = names_out
         else:
             # update file or sheet to read
-            for (current_name, current_coord) in zip(self.elements['cellname'],
-                                                     self.elements[read_along]):
+            for name in self.elements['cellname']:
                 for step in steps:
                     list_out.append(step)
-                    names_out.append(current_name)
+                    names_out.append(name)
             self.elements[read_along] = list_out
             self.elements['cellname'] = names_out
 
@@ -667,9 +666,12 @@ class Lookups(ExternalVariable):
                 subs_write = f"[{', '.join(map(str, subs))}]"
             else:
                 subs_write = ""
-            vensim_eq = f"""
-            {self.var_name}{subs_write}=
-            \tGET_{loading}_LOOKUPS('{file}', '{sheet}', '{self.series['name'][0]}', '{cellname}') ~~|"""
+
+            vensim_eq = """
+            %s=
+            \tGET_%s_LOOKUPS('%s', '%s', '%s', '%s') ~~|""" % (
+                self.var_name+subs_write, loading, file, sheet,
+                self.series['name'][0], cellname)
 
             vensim_eqs += vensim_eq
 
@@ -856,15 +858,18 @@ class Data(ExternalVariable):
                 subs_write = f"[{', '.join(map(str, subs))}]"
             else:
                 subs_write = ""
-            vensim_eq = f"""
-            {self.var_name}{subs_write}"""
+
             if self.interp:
                 # add keyword for interpolation method
-                vensim_eq += f":{self.interp}::="
+                interp_write = f":{self.interp}:"
             else:
-                vensim_eq += ":="
-            vensim_eq += f"""
-            \tGET_{loading}_DATA('{file}', '{sheet}', '{self.series['name'][0]}', '{cellname}') ~~|"""
+                interp_write = ""
+
+            vensim_eq = """
+            %s:=
+            \tGET_%s_DATA('%s', '%s', '%s', '%s') ~~|""" % (
+                self.var_name+subs_write+interp_write,
+                loading, file, sheet, self.series['name'][0], cellname)
 
             vensim_eqs += vensim_eq
 
@@ -995,9 +1000,11 @@ class Constants(ExternalVariable):
                 subs_write = ""
             if self.transpose:
                 cellname += '*'
-            vensim_eq = f"""
-            {self.var_name}{subs_write}=
-            \tGET_{loading}_CONSTANTS('{file}', '{sheet}', '{cellname}') ~~|"""
+
+            vensim_eq = """
+            %s=
+            \tGET_%s_CONSTANTS('%s', '%s', '%s') ~~|""" % (
+                self.var_name+subs_write, loading, file, sheet, cellname)
 
             vensim_eqs += vensim_eq
 

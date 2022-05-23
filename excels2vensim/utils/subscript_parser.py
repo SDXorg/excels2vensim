@@ -1,11 +1,11 @@
 """
 Functions for parsing the subscript from a .mdl file using PySD.
 """
-import warnings
 import json
-from pathlib import Path
 
-import pysd.translation.vensim.vensim2py as pysd_v2py
+from pysd.translators.vensim.vensim_file import VensimFile
+from pysd.translators.vensim.vensim_element import SubscriptRange
+from pysd.builders.python.subscripts import SubscriptManager
 
 
 def get_subscripts(mdl_file, output=None):
@@ -56,64 +56,21 @@ def _translate_vensim(mdl_file):
     >>> translate_vensim('my_model.mdl')
 
     """
-    root_path = Path(mdl_file).parent
-    with open(mdl_file, 'r', encoding='UTF-8') as in_file:
-        text = in_file.read()
+    model = VensimFile(mdl_file)
+    # parse model file without parsing the sections
+    model.parse(parse_all=False)
 
-    # extract model elements
-    file_sections = pysd_v2py.get_file_sections(text.replace('\n', ''))
+    subscripts = []
+    # parse only first section (main)
+    model.sections[0].parse(parse_all=False)
+    for element in model.sections[0].elements:
+        if (":" in element.equation and ":=" not in element.equation)\
+           or "<->" in element.equation:
+            # parse elements with ":" or "<->" in the equation
+            new_element = element.parse()
+            if isinstance(new_element, SubscriptRange):
+                # if parsed element is a SubscriptRange get the
+                # AbstractSubscriptRange
+                subscripts.append(new_element.get_abstract_subscript_range())
 
-    # get subscripts
-    all_subscripts = {}
-    for section in file_sections:
-        all_subscripts.update(_translate_section(section, root_path))
-
-    return all_subscripts
-
-
-def _translate_section(section, root_path):
-    """
-    Translate section subscripts to a python dictionary.
-    Adapted from pysd.py_backend.vensim.vensim2py.translate_section.
-
-    Parameters
-    ----------
-    section: str
-        Output from pysd.py_backend.vensim.vensim2py.get_file_sections().
-
-    root_path: str
-        The root path to the model file, neede for subscripts defined with
-        GET XLS/DIRECT SUBSCRIPTS.
-
-    Returns
-    -------
-    subscript_dict: dict
-        Dictionary of the subscripts.
-
-    """
-    model_elements = pysd_v2py.get_model_elements(section['string'])
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        # extract equation components with ':' or '<->'
-        for entry in model_elements:
-            if entry['kind'] == 'entry'\
-                and ('<->' in entry['eqn']
-                     or (':' in entry['eqn'] and ':=' not in entry['eqn'])):
-                entry.update(
-                    pysd_v2py.get_equation_components(entry['eqn'], root_path)
-                    )
-
-    # Create a namespace for the subscripts
-    subscript_dict = {}
-    for e in model_elements:
-        if e['kind'] == 'subdef':
-            subscript_dict[e['real_name']] = e['subs']
-            for compatible in e['subs_compatibility']:
-                # check if copy
-                if not subscript_dict[compatible]:
-                    # copy subscript to subscript_dict
-                    subscript_dict[compatible] =\
-                        subscript_dict[e['subs_compatibility'][compatible][0]]
-
-    return subscript_dict
+    return SubscriptManager(subscripts, model.mdl_path).subscripts

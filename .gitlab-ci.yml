@@ -14,7 +14,9 @@ tests:
     - coverage xml
   artifacts:
     reports:
-      cobertura: tests/coverage.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: tests/coverage.xml
 
 docs:
   stage: test

@@ -36,6 +36,6 @@ From the project's main directory, use the following command to install it:
 
 Required Dependencies
 ---------------------
-*excels2vensim* uses `PySD <https://pysd.readthedocs.io>`_ library for reading subscripts from Vensims model file. It requires at least **Python 3.7** and **PySD 2.1.1**.
+*excels2vensim* uses `PySD <https://pysd.readthedocs.io>`_ library for reading subscripts from Vensims model file. It requires at least **Python 3.7** and **PySD 3.0**.
 
 If not installed, *PySD* should be built automatically if you are installing via `pip`, using `conda`, or from source.
