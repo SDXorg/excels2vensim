@@ -25,7 +25,7 @@ Easy generate Vensim GET XLS/DIRECT equations with cellrange names.
    :target: https://excels2vensim.readthedocs.io/en/latest/?badge=latest
 
 .. |PyPI license| image:: https://img.shields.io/pypi/l/excels2vensim.svg
-   :target: https://gitlab.com/eneko.martin.martinez/excels2vensim/-/blob/master/LICENSE
+   :target: https://github.com/SDXorg/excels2vensim/blob/master/LICENSE
 
 .. |Anaconda package| image:: https://anaconda.org/conda-forge/excels2vensim/badges/version.svg
    :target: https://anaconda.org/conda-forge/excels2vensim
@@ -38,9 +38,6 @@ Easy generate Vensim GET XLS/DIRECT equations with cellrange names.
 
 .. |PyPI status| image:: https://img.shields.io/pypi/status/excels2vensim.svg
    :target: https://pypi.python.org/pypi/excels2vensim/
-
-.. |pipeline| image:: https://gitlab.com/eneko.martin.martinez/excels2vensim/badges/master/pipeline.svg
-   :target: https://gitlab.com/eneko.martin.martinez/excels2vensim/
 
 .. |coverage| image:: https://gitlab.com/eneko.martin.martinez/excels2vensim/badges/master/coverage.svg
    :target: https://gitlab.com/eneko.martin.martinez/excels2vensim/
@@ -61,7 +58,7 @@ This library is able to automate the generation of the following type of equatio
 #. GET XLS LOOKUPS
 #. GET DIRECT LOOKUPS
 
-The `original code for excels2vensim is available at GitLab <https://gitlab.com/eneko.martin.martinez/excels2vensim>`_. If you find a bug, or are interested in a particular feature, please use the `issue tracker from GitLab <https://gitlab.com/eneko.martin.martinez/excels2vensim/-/issues>`_. For contributions see :doc:`development <development>`.
+The `original code for excels2vensim is available at GitHub <https://github.com/SDXorg/excels2vensim>`_. If you find a bug, or are interested in a particular feature, please use the `issue tracker from GitHub <https://github.com/SDXorg/excels2vensim/issues>`_. For contributions see :doc:`development <development>`.
 
 Requirements
 ------------
@@ -83,11 +80,11 @@ Additional Resources
 --------------------
 Examples
 ^^^^^^^^
-Some jupyter notebook examples are available in the `examples folder of the GitLab repository <https://gitlab.com/eneko.martin.martinez/excels2vensim/-/tree/master/examples>`_.
+Some jupyter notebook examples are available in the `examples folder of the GitHub repository <https://github.com/SDXorg/excels2vensim/tree/master/examples>`_.
 
 Acknowledgmentes
 ----------------
-This library was originally developed for `H2020 LOCOMOTION <https://www.locomotion-h2020.eu>`_ project by `@eneko.martin.martinez <https://gitlab.com/eneko.martin.martinez>`_ at `Centre de Recerca Ecològica i Aplicacions Forestals (CREAF) <http://www.creaf.cat>`_.
+This library was originally developed for `H2020 LOCOMOTION <https://www.locomotion-h2020.eu>`_ project by `@enekomartinmartinez <https://github.com/enekomartinmartinez>`_ at `Centre de Recerca Ecològica i Aplicacions Forestals (CREAF) <http://www.creaf.cat>`_.
 
 This project has received funding from the European Union’s Horizon 2020
 research and innovation programme under grant agreement No. 821105.

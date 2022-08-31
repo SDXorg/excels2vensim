@@ -3,7 +3,6 @@ Tests for the general functioning of the library
 """
 import os
 import sys
-from pathlib import Path
 import subprocess
 import shutil
 from pysd import read_vensim
@@ -13,17 +12,16 @@ import pytest
 
 import excels2vensim as e2v
 
-cdir = Path(__file__).parent
 
 encoding_stdout = sys.stdout.encoding or "utf-8"
 encoding_stderr = sys.stderr.encoding or "utf-8"
 
 
-def test_constants(tmp_path):
+def test_constants(tmp_path, _root):
 
-    os.chdir(cdir.joinpath("tmp_dir"))
+    os.chdir(_root / "tmp_dir")
     # copy original file without data
-    shutil.copy2(cdir.joinpath('original_files/inputs.xlsx'),
+    shutil.copy2(_root / 'original_files' / 'inputs.xlsx',
                  'inputs.xlsx')
 
     obj0 = e2v.Constants(
@@ -71,9 +69,9 @@ def test_constants(tmp_path):
         'region': ['Region1', 'Region2', 'Region3', 'Region4'],
         'out': ['Elec', 'Heat', 'Solid', 'Liquid']})
 
-    result = e2v.load_from_json(cdir.joinpath('jsons/constants.json'))
+    result = e2v.load_from_json(_root / 'jsons' / 'constants.json')
 
-    with open(cdir.joinpath('original_files/model_constants.mdl')) as file:
+    with open(_root / 'original_files' / 'model_constants.mdl') as file:
         model = file.read()
 
     model += result
@@ -89,20 +87,20 @@ def test_constants(tmp_path):
     assert not np.any(np.isnan(var.values))
 
 
-def test_data(tmp_path):
+def test_data(tmp_path, _root):
 
-    os.chdir(cdir.joinpath("tmp_dir"))
+    os.chdir(_root / "tmp_dir")
     # copy original file without cellranges
-    shutil.copy2(cdir.joinpath('original_files/inputs_data.xlsx'),
+    shutil.copy2(_root / 'original_files' / 'inputs_data.xlsx',
                  'inputs_data.xlsx')
 
     # read subscripts from a mdl file
-    e2v.Subscripts.read(cdir.joinpath('subscripts/data.mdl'))
+    e2v.Subscripts.read(_root / 'subscripts' / 'data.mdl')
 
     # test load_from_json
-    result = e2v.load_from_json(cdir.joinpath('jsons/data.json'))
+    result = e2v.load_from_json(_root / 'jsons' / 'data.json')
 
-    with open(cdir.joinpath('original_files/model_data.mdl')) as file:
+    with open(_root / 'original_files' / 'model_data.mdl') as file:
         model = file.read()
 
     model += result
@@ -132,18 +130,18 @@ def test_data(tmp_path):
     assert int(var.loc['2007', '"10-14"', "LATAM", "male"]) == 15310480
 
 
-def test_lookup(tmp_path):
+def test_lookup(tmp_path, _root):
 
-    os.chdir(cdir.joinpath("tmp_dir"))
+    os.chdir(_root / "tmp_dir")
     # copy original file without cellranges
-    shutil.copy2(cdir.joinpath('original_files/inputs_data2.xlsx'),
-                 cdir.joinpath('tmp_dir/inputs_data2.xlsx'))
+    shutil.copy2(_root / 'original_files' / 'inputs_data2.xlsx',
+                 _root / 'tmp_dir' / 'inputs_data2.xlsx')
 
     out_dir = "lookup_output.txt"
 
-    subs_dir = cdir.joinpath("subscripts/data_subscripts.json")
+    subs_dir = str(_root / "subscripts" / "data_subscripts.json")
 
-    conf_dir = cdir.joinpath("jsons/lookups.json")
+    conf_dir = str(_root / "jsons" / "lookups.json")
 
     # test command line
     subprocess.run([
@@ -154,7 +152,7 @@ def test_lookup(tmp_path):
     with open(out_dir) as file:
         result = file.read()
 
-    with open(cdir.joinpath('original_files/model_data.mdl')) as file:
+    with open(_root / 'original_files' / 'model_data.mdl') as file:
         model = file.read()
 
     model += result
@@ -184,11 +182,11 @@ def test_lookup(tmp_path):
     assert int(var.loc['2007', "male", '"10-14"', "LATAM", ]) == 15310480
 
 
-def test_non_valid_chars(tmp_path):
+def test_non_valid_chars(tmp_path, _root):
 
-    os.chdir(cdir.joinpath("tmp_dir"))
+    os.chdir(_root / "tmp_dir")
     # copy original file without data
-    shutil.copy2(cdir.joinpath('original_files/inputs.xlsx'),
+    shutil.copy2(_root / 'original_files' / 'inputs.xlsx',
                  'inputs_nvc.xlsx')
 
     expected = r"The name of the variable 'my q row\$' has special characters"\
@@ -220,7 +218,7 @@ def test_non_valid_chars(tmp_path):
 
     # invalid dim name
     with pytest.warns(UserWarning) as records:
-        out = e2v.load_from_json(cdir.joinpath('jsons/constants_nvc.json'))
+        out = e2v.load_from_json(_root / 'jsons' / 'constants_nvc.json')
 
     assert len(records) == 2
 
@@ -245,37 +243,37 @@ def test_non_valid_chars(tmp_path):
 
     # invalid series name
     # copy original file without cellranges
-    shutil.copy2(cdir.joinpath('original_files/inputs_data.xlsx'),
+    shutil.copy2(_root / 'original_files' / 'inputs_data.xlsx',
                  'inputs_data_nvs.xlsx')
 
     # read subscripts from a mdl file
-    e2v.Subscripts.read(cdir.joinpath('subscripts/data.mdl'))
+    e2v.Subscripts.read(_root / 'subscripts' / 'data.mdl')
 
     expected = r"The name of the interpolation dimension 'my time\$'"\
                + r" has special characters\. 'my_time' will be used for "\
                + r"cellrange names\."
     with pytest.warns(UserWarning, match=expected) as records:
-        out = e2v.load_from_json(cdir.joinpath('jsons/data_nvseries.json'))
+        out = e2v.load_from_json(_root / 'jsons' / 'data_nvseries.json')
 
     assert "DATA('inputs_data_nvs.xlsx', 'GPH', 'my_time',"\
         in out
 
 
-def test_data_with_keywords(tmp_path):
+def test_data_with_keywords(tmp_path, _root):
     """
     Test for DATA with 'HOLD BACKWARD' keyword
     """
 
-    os.chdir(cdir.joinpath("tmp_dir"))
+    os.chdir(_root / "tmp_dir")
     # copy original file without cellranges
-    shutil.copy2(cdir.joinpath('original_files/inputs_data.xlsx'),
+    shutil.copy2(_root / 'original_files' / 'inputs_data.xlsx',
                  'inputs_data_k.xlsx')
 
     # read subscripts from a mdl file
-    e2v.Subscripts.read(cdir.joinpath('subscripts/data.mdl'))
+    e2v.Subscripts.read(_root / 'subscripts' / 'data.mdl')
 
     # test load_from_json
-    result = e2v.load_from_json(cdir.joinpath('jsons/data_keywords.json'))
+    result = e2v.load_from_json(_root / 'jsons' / 'data_keywords.json')
 
     assert "]:=" not in result
     assert "]:HOLD BACKWARD::=" in result
@@ -297,16 +295,21 @@ def test_data_with_keywords(tmp_path):
             interp='non_valid')
 
 
-def test_dimensionless_data(tmp_path):
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="not working on Windows, stdout produces extra line-breaks in"
+           " GHActions. Locally is working fine."
+)
+def test_dimensionless_data(tmp_path, _root):
 
-    os.chdir(cdir.joinpath("tmp_dir"))
+    os.chdir(_root / "tmp_dir")
     # copy original file without cellranges
-    shutil.copy2(cdir.joinpath('original_files/inputs_data2.xlsx'),
-                 cdir.joinpath('tmp_dir/inputs_dmnl.xlsx'))
+    shutil.copy2(_root / 'original_files' / 'inputs_data2.xlsx',
+                 _root / 'tmp_dir' / 'inputs_dmnl.xlsx')
 
-    subs_dir = cdir.joinpath("subscripts/data_subscripts.json")
+    subs_dir = str(_root / "subscripts" / "data_subscripts.json")
 
-    conf_dir = cdir.joinpath("jsons/dimensionless.json")
+    conf_dir = str(_root / "jsons" / "dimensionless.json")
 
     # test command line
     out = subprocess.run([
@@ -328,15 +331,15 @@ def test_dimensionless_data(tmp_path):
         " 'population_constant')" in stdout
 
 
-def test_force(tmp_path):
+def test_force(tmp_path, _root):
     """
     Test for force option
     """
     from openpyxl import load_workbook
 
-    os.chdir(cdir.joinpath("tmp_dir"))
+    os.chdir(_root / "tmp_dir")
     # copy original file without data
-    shutil.copy2(cdir.joinpath("original_files/inputs.xlsx"),
+    shutil.copy2(_root / "original_files" / "inputs.xlsx",
                  "inputs_force.xlsx")
 
     element_dict = {
@@ -351,7 +354,7 @@ def test_force(tmp_path):
             "file": "inputs_force.xlsx",
             "sheet": "Region1",
             "dimensions": {}
-    }}
+        }}
 
     e2v.execute(element_dict)
 

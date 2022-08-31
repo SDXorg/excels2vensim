@@ -9,7 +9,7 @@ setup(
     author='Eneko Martin Martinez',
     author_email='eneko.martin.martinez@gmail.com',
     packages=find_packages(exclude=['docs', 'tests', 'dist', 'build']),
-    url='https://gitlab.com/eneko.martin.martinez/excels2vensim',
+    url='https://github.com/SDXorg/excels2vensim',
     license='MIT',
     description='Easy write excel inputs in Vensim',
     long_description=open('README.md').read(),
@@ -26,6 +26,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
     install_requires=open('requirements.txt').read().strip().split('\n'),
     include_package_data=True

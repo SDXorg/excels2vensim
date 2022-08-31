@@ -24,9 +24,9 @@ To install from source, clone the project with git:
 
 .. code-block:: bash
 
-   git clone https://gitlab.com/eneko.martin.martinez/excels2vensim
+   git clone https://github.com/SDXorg/excels2vensim
 
-or download the `latest version from GitLab <https://gitlab.com/eneko.martin.martinez/excels2vensim>`_.
+or download the `latest version from GitHub <https://github.com/SDXorg/excels2vensim>`_.
 
 From the project's main directory, use the following command to install it:
 

@@ -11,7 +11,7 @@ information about each subscript range should be given, which specifies how the 
 spread along the file or files. For DATA and LOOKUPS variables, in addition, information
 for the interpolation series (time and x, respectibvely) has to be added.
 
-Some examples are given in `examples folder of the GitLab repository <https://gitlab.com/eneko.martin.martinez/excels2vensim/-/tree/master/examples>`_.
+Some examples are given in `examples folder of the GitHub repository <https://github.com/SDXorg/excels2vensim/tree/master/examples>`_.
 Please, check them to understand the usage.
 
 .. note::

@@ -27,11 +27,11 @@ See the [project documentation](http://excels2vensim.readthedocs.org/) for infor
 - [Installation](http://excels2vensim.readthedocs.org/en/latest/installation.html)
 - [Usage](http://excels2vensim.readthedocs.org/en/latest/usage.html)
 
-Some jupyter notebook examples are available in the [examples folder of the GitLab repository](https://gitlab.com/eneko.martin.martinez/excels2vensim/-/tree/master/examples).
+Some jupyter notebook examples are available in the [examples folder of the GitHub repository](https://github.com/SDXorg/excels2vensim/tree/master/examples).
 
 ## Authority and acknowledgmentes
 
-This library was originally developed for [H2020 LOCOMOTION](https://www.locomotion-h2020.eu/) project by [@eneko.martin.martinez](https://gitlab.com/eneko.martin.martinez) at [Centre de Recerca Ecològica i Aplicacions Forestals (CREAF)](http://www.creaf.cat/).
+This library was originally developed for [H2020 LOCOMOTION](https://www.locomotion-h2020.eu/) project by [@enekomartinmartinez](https://github.com/enekomartinmartinez) at [Centre de Recerca Ecològica i Aplicacions Forestals (CREAF)](http://www.creaf.cat/).
 
 This project has received funding from the European Union’s Horizon 2020
 research and innovation programme under grant agreement No. 821105.

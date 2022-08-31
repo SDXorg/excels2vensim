@@ -1,12 +1,9 @@
 import shutil
 import os
-from pathlib import Path
 
 import pytest
 
 import excels2vensim as e2v
-
-cdir = Path(__file__).parent
 
 
 def test_col_to_num():
@@ -175,13 +172,13 @@ def test_add_series(tmp_path):
         obj.add_series('time', 'B5', 'file', 10)
 
 
-def test_write_cell_range(tmp_path):
+def test_write_cell_range(tmp_path, _root):
     """
     Test for write_cell_range and Excels class
     """
-    os.chdir(cdir.joinpath("tmp_dir"))
+    os.chdir(_root / "tmp_dir")
     # copy original file without cellranges
-    shutil.copy2(cdir.joinpath('original_files/white.xlsx'),
+    shutil.copy2(_root / 'original_files' / 'white.xlsx',
                  'white.xlsx')
 
     name = 'my_cellrange'
@@ -238,7 +235,7 @@ def test_write_cell_range(tmp_path):
     assert file not in e2v.Excels._Excels
 
 
-def test_load_from_json():
+def test_load_from_json(_root):
     """
     Test for load_from_json for non-navild type. Valid ones are tested in
     tests_excels2vensim.py
@@ -248,4 +245,4 @@ def test_load_from_json():
                + " It must be 'constants', 'lookups' or 'data'."
     # invalid var name
     with pytest.raises(ValueError, match=expected):
-        e2v.load_from_json(cdir.joinpath('jsons/non_valid.json'))
+        e2v.load_from_json(_root / 'jsons' / 'non_valid.json')
