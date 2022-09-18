@@ -15,7 +15,6 @@ Easy generate Vensim GET XLS/DIRECT equations with cellrange names.
 |PyPI package|
 |PyPI status|
 |PyPI pyversions|
-|pipeline|
 |coverage|
 
 .. |made-with-sphinx-doc| image:: https://img.shields.io/badge/Made%20with-Sphinx-1f425f.svg
@@ -39,9 +38,8 @@ Easy generate Vensim GET XLS/DIRECT equations with cellrange names.
 .. |PyPI status| image:: https://img.shields.io/pypi/status/excels2vensim.svg
    :target: https://pypi.python.org/pypi/excels2vensim/
 
-.. |coverage| image:: https://gitlab.com/eneko.martin.martinez/excels2vensim/badges/master/coverage.svg
-   :target: https://gitlab.com/eneko.martin.martinez/excels2vensim/
-
+.. |coverage| image:: https://coveralls.io/repos/github/SDXorg/excels2vensim/badge.svg?branch=master
+   :target: https://coveralls.io/github/SDXorg/excels2vensim?branch=master
 
 Systems Dynamics models often use large amounts of input data. Reading this data is complicated when it corresponds to multidimensional matrices. In the case of Vensim, if the data is read from '.xlsx' files, the data can only be read in two-dimensional tables at most, which implies the introduction of multiple equations in the model file.
 

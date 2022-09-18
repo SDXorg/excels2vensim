@@ -1,5 +1,12 @@
 # excels2vensim
 
+[![Coverage Status](https://coveralls.io/repos/github/SDXorg/excels2vensim/badge.svg?branch=master)](https://coveralls.io/github/SDXorg/excels2vensim?branch=master)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/excels2vensim/badges/version.svg)](https://anaconda.org/conda-forge/excels2vensim)
+[![PyPI version](https://badge.fury.io/py/excels2vensim.svg)](https://badge.fury.io/py/excels2vensim)
+[![PyPI status](https://img.shields.io/pypi/status/excels2vensim.svg)](https://pypi.python.org/pypi/excels2vensim/)
+[![Py version](https://img.shields.io/pypi/pyversions/excels2vensim.svg)](https://pypi.python.org/pypi/excels2vensim/)
+[![Docs](https://readthedocs.org/projects/excels2vensim/badge/?version=latest)](https://excels2vensim.readthedocs.io/en/latest/?badge=latest)
+
 Systems Dynamics models often use large amounts of input data. Reading this data is complicated when it corresponds to multidimensional matrices. In the case of Vensim, if the data is read from '.xlsx' files, the data can only be read in two-dimensional tables at most, which implies the introduction of multiple equations in the model file.
 
 The excels2vensim library aims to simplify the incorporation of equations from external data into Vensim. Given the name of the variable and information on how its dimensions are distributed, the library returns the equations for copying and pasting into the Vensim model. In addition, the library uses cellrange names to write the equations, and automatically creates the cellranges in the '.xlsx' file.
