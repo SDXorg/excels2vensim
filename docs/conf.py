@@ -18,8 +18,12 @@ import sphinx_rtd_theme
 
 MOCK_MODULES = [
     'numpy', 'pysd', 'pysd.py_backend', 'openpyxl', 'openpyxl.workbook',
-    'openpyxl.workbook.defined_name', 'pysd.py_backend.vensim',
-    'pysd.py_backend.vensim.vensim2py']
+    'openpyxl.workbook.defined_name', 'pysd.translators',
+    'pysd.translators.vensim', 'pysd.translators.vensim.vensim_file',
+    'pysd.translators.vensim.vensim_element', 'pysd.builders',
+    'pysd.builders.python', 'pysd.builders.python.subscripts'
+
+]
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
