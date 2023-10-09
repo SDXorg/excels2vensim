@@ -193,19 +193,17 @@ def test_write_cell_range(tmp_path, _root):
 
     assert file in e2v.Excels._Excels
     wb = e2v.Excels._Excels[file]
+    ws = wb['Sheet1']
 
-    sheetId = [sheetname_wb.lower() for sheetname_wb
-               in wb.sheetnames].index(sheet.lower())
-
-    assert name in wb.defined_names.localnames(sheetId)
-    assert wb.defined_names.get(name, sheetId).attr_text == 'Sheet1!$A$1:$B$2'
+    assert name in ws.defined_names
+    assert ws.defined_names.get(name).attr_text == 'Sheet1!$A$1:$B$2'
 
     # write same cellrange (pass)
     write_cellrange(name, file, sheet,
                     sheet+'!$A$1:$B$2', False)
 
-    assert name in wb.defined_names.localnames(sheetId)
-    assert wb.defined_names.get(name, sheetId).attr_text == 'Sheet1!$A$1:$B$2'
+    assert name in ws.defined_names
+    assert ws.defined_names.get(name).attr_text == 'Sheet1!$A$1:$B$2'
 
     # write cellrange with different values (error)
     expected = f"\nTrying to write a cellrange with name '{name}'"\
@@ -219,15 +217,15 @@ def test_write_cell_range(tmp_path, _root):
         write_cellrange(name, file, sheet,
                         sheet+'!$A$3:$B$4', False)
 
-    assert name in wb.defined_names.localnames(sheetId)
-    assert wb.defined_names.get(name, sheetId).attr_text == 'Sheet1!$A$1:$B$2'
+    assert name in ws.defined_names
+    assert ws.defined_names.get(name).attr_text == 'Sheet1!$A$1:$B$2'
 
     # write cellrange with different values (force to remove old)
     write_cellrange(name, file, sheet,
                     sheet+'!$A$3:$B$4', True)
 
-    assert name in wb.defined_names.localnames(sheetId)
-    assert wb.defined_names.get(name, sheetId).attr_text == 'Sheet1!$A$3:$B$4'
+    assert name in ws.defined_names
+    assert ws.defined_names.get(name).attr_text == 'Sheet1!$A$3:$B$4'
 
     # close file
     e2v.Excels.save_and_close()

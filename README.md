@@ -24,8 +24,8 @@ This library is able to automate the generation of the following type of equatio
 
 ## Requirements
 
-- Python 3.7+
-- PySD 3.0+
+- Python 3.9+
+- PySD 3.12+
 
 ## Resources
 

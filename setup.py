@@ -5,7 +5,7 @@ exec(open('excels2vensim/_version.py').read())
 setup(
     name='excels2vensim',
     version=__version__,
-    python_requires='>=3.7',
+    python_requires='>=3.9',
     author='Eneko Martin Martinez',
     author_email='eneko.martin.martinez@gmail.com',
     packages=find_packages(exclude=['docs', 'tests', 'dist', 'build']),
@@ -23,8 +23,6 @@ setup(
 
         'License :: OSI Approved :: MIT License',
 
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',

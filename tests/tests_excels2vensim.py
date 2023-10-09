@@ -359,8 +359,9 @@ def test_force(tmp_path, _root):
     e2v.execute(element_dict)
 
     wb = load_workbook("inputs_force.xlsx")
-    assert "my_var" in wb.defined_names.localnames(0)
-    assert wb.defined_names.get("my_var", 0).attr_text == 'Region1!$A$10:$A$10'
+    ws = wb["Region1"]
+    assert "my_var" in ws.defined_names
+    assert ws.defined_names.get("my_var").attr_text == 'Region1!$A$10:$A$10'
     wb.close()
 
     element_dict["my_var"]["cell"] = "B34"
@@ -376,6 +377,7 @@ def test_force(tmp_path, _root):
     e2v.execute(element_dict)
 
     wb = load_workbook("inputs_force.xlsx")
-    assert "my_var" in wb.defined_names.localnames(0)
-    assert wb.defined_names.get("my_var", 0).attr_text == 'Region1!$B$34:$B$34'
+    ws = wb["Region1"]
+    assert "my_var" in ws.defined_names
+    assert ws.defined_names.get("my_var").attr_text == 'Region1!$B$34:$B$34'
     wb.close()

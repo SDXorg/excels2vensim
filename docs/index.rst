@@ -60,8 +60,8 @@ The `original code for excels2vensim is available at GitHub <https://github.com/
 
 Requirements
 ------------
-* Python 3.7+
-* PySD 3.0+
+* Python 3.9+
+* PySD 3.12+
 
 Contents
 --------

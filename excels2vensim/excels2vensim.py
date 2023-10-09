@@ -376,26 +376,27 @@ class ExternalVariable(object):
 
         """
         wb = Excels.read(file)
-        sheetId = [sheetname_wb.lower() for sheetname_wb
-                   in wb.sheetnames].index(sheet.lower())
+        for sheetId, sheet1 in enumerate(wb.sheetnames):
+            if sheet1.lower() == sheet.lower():
+                local_cellranges = wb[sheet1].defined_names
+                break
 
-        existing_names = wb.defined_names.localnames(sheetId)
-        if name in existing_names:
-            if wb.defined_names.get(name, sheetId).attr_text == cellrange:
+        if name in local_cellranges:
+            if local_cellranges.get(name).attr_text == cellrange:
                 # cellrange already defined with same name and coordinates
                 return
             elif force:
-                wb.defined_names.delete(name, sheetId)
+                del local_cellranges[name]
             else:
                 raise ValueError(
                     f"\nTrying to write a cellrange with name '{name}' at "
                     + f"'{cellrange}'. However, '{name}' already exist in "
-                    + f"'{wb.defined_names.get(name, sheetId).attr_text}'\n"
+                    + f"'{local_cellranges.get(name).attr_text}'\n"
                     + "Use force=True to overwrite it.")
 
         new_range = DefinedName(
             name, attr_text=cellrange, localSheetId=sheetId)
-        wb.defined_names.append(new_range)
+        local_cellranges.add(new_range)
 
     @staticmethod
     def _col_to_num(col):
