@@ -1,4 +1,4 @@
-Tests use [unittest](https://docs.python.org/3/library/unittest.html), [pytest](https://docs.pytest.org/en/stable/), [pytest-cov](https://pytest-cov.readthedocs.io/en/latest/) and [pytest-xdist](https://docs.pytest.org/en/2.1.0/xdist.html).
+Tests use [pytest](https://docs.pytest.org), [pytest-cov](https://pytest-cov.readthedocs.io), and [pytest-xdist](https://pytest-xdist.readthedocs.io).
 
 To run tests:
 ```
