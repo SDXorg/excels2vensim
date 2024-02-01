@@ -2,6 +2,7 @@
 Tests for the argument parser
 """
 import subprocess
+
 import pytest
 
 from excels2vensim.cli import parser
