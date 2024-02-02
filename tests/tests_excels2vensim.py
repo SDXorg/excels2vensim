@@ -5,10 +5,10 @@ import os
 import sys
 import subprocess
 import shutil
-from pysd import read_vensim
-import numpy as np
 
 import pytest
+import numpy as np
+from pysd import read_vensim
 
 import excels2vensim as e2v
 
@@ -217,10 +217,10 @@ def test_non_valid_chars(tmp_path, _root):
     assert "CONSTANTS('inputs_nvc.xlsx', 'Region1', 'my_q_row')" in out
 
     # invalid dim name
-    with pytest.warns(UserWarning) as records:
+    with pytest.warns(UserWarning) as record:
         out = e2v.load_from_json(_root / 'jsons' / 'constants_nvc.json')
 
-    assert len(records) == 2
+    record = [str(r.message) for r in record]
 
     expected = [
         "The name of the subscript '\"  Elec/el\"' has special characters. "
@@ -228,8 +228,8 @@ def test_non_valid_chars(tmp_path, _root):
         "The name of the subscript '\"Solid$\"' has special characters. "
         + "'Solid' will be used for cellrange names."]
 
-    for record in records:
-        assert record.message.args[0] in expected
+    for message in expected:
+        assert message in record
 
     assert "share_energy[source, sector, Region3, \"  Elec/el\"]=\n\t"\
         + "GET_DIRECT_CONSTANTS('inputs_nvc.xlsx', 'Region3',"\
@@ -252,7 +252,7 @@ def test_non_valid_chars(tmp_path, _root):
     expected = r"The name of the interpolation dimension 'my time\$'"\
                + r" has special characters\. 'my_time' will be used for "\
                + r"cellrange names\."
-    with pytest.warns(UserWarning, match=expected) as records:
+    with pytest.warns(UserWarning, match=expected):
         out = e2v.load_from_json(_root / 'jsons' / 'data_nvseries.json')
 
     assert "DATA('inputs_data_nvs.xlsx', 'GPH', 'my_time',"\
