@@ -16,7 +16,6 @@ import excels2vensim as e2v
 encoding_stdout = sys.stdout.encoding or "utf-8"
 encoding_stderr = sys.stderr.encoding or "utf-8"
 
-
 def test_constants(tmp_path, _root):
 
     os.chdir(_root / "tmp_dir")
